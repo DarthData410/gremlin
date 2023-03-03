@@ -5,10 +5,10 @@ gremlin::gremlin() {
 }
     
 string gremlin::title(){
-    return fm.bluetxt()+_title+fm.none();
+    return appname()+" - "+fm.bluetxt()+_title+fm.none();
 }
 string gremlin::appname(){
-    return fm.goldtxt()+_appname+fm.none();
+    return fm.greentxt()+_appname+fm.none();
 }
 string gremlin::ver(){
     return fm.greentxt()+_ver+fm.none();
@@ -60,13 +60,13 @@ string gremlin::process(string _run) {
     // unload module:
     else if(stg.isun(_run)) {
         if(_mod_loaded!="") {
-            ret += "\n mod: "+_mod_loaded+" unloaded. \n";
+            ret += "  mod: "+_mod_loaded+" unloaded. \n";
         }
         _mlc = modload(CMD_START);
     }
     // prep for loading module:
     else if(stg.isload(_run) && _loadmod==false) {
-        ret += "\n load which mod? \n";
+        ret += "  load which mod? \n";
         _loadmod=true;
     }
     // load module
@@ -74,11 +74,11 @@ string gremlin::process(string _run) {
         _loadmod=false;
         _mlc = modload(_run);
         if(_mlc==MLC_BASE) {
-            ret += "\n ...no such mod: "+_run+" ... \n";
+            ret += "  ...no such mod: "+_run+" ... \n";
         }
         else
         {
-            ret += "\n mod: "+stg.mod().name+" loaded \n";
+            ret += "  mod: "+stg.mod().name+" loaded";
             _mod._loaded_mod = stg.mod();
         }
     }
@@ -107,12 +107,14 @@ bool gremlin::run(string runit){
     _return = header();
     _return +=  " "+fm.goldtxt()+"|"+fm.none()+"";
     
+    /* TODO: Add 'echo' option:
     if(runit!=CMD_START) {
          _return += "$: {"+runit+"} \n";
     }
     else {
         _return += "\n";
     }
+    */
 
     // test for quit:
     if(stg.isquit(runit)) {

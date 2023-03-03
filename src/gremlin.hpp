@@ -8,7 +8,7 @@ private:
     settings stg = settings();
     bool _isrunning = false;
     bool _iserror = false;
-    string _title = "gremlin - *nix security framework";
+    string _title = "*nix security framework";
     string _appname = "gremlin";
     string _ver = "v1.0 (feb23)";
     string _by = "PyFryLabs -> @pyfryday";

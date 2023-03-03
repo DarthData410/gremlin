@@ -50,18 +50,46 @@ Command settings::getcmd(string _r,char args[]) {
     if(ret._base.find('Q',0)==0 || ret._base.find('q',0)==0) {
         ret.value = CQUIT;
     }
-    else if(ret._base=="UN" || ret._base=="un") {
+    else if(ret._base.find('U',0)==0 || ret._base.find('u',0)==0) {
         ret.value = CUNLOAD;
     }
     else if(ret._base.find('?',0)==0 || ret._base=="Help" || ret._base=="HELP") {
         ret.value = CHELP;
+        // need to check for loaded mod, and load its help...
     }
-    else if(ret._base.find('*',0)==0) {
+    else if(ret._base.find(CLOAD,0)==0) {
         ret.value = CLOAD;
     }
     else {
-        if(args[0]!=CNULL && (ret._base.find('!',0)==0 || ret._base=="run")) {
+        if(args[0]!=CNULL && (ret._base.find(CRUN,0)==0)) {
             ret.value = CRUN;
+            bool sp=false;
+            int i=0;
+            
+            if(ret._base.length()>2) {
+                for(char c : ret._base) {
+                    
+                    if(sp && c!=CNULL) {
+                        if(c!=CTERM) {
+                            ret.parm[i] += c;
+                        }
+                    }
+                    else if(sp && c==CNULL) {
+                        sp = false;
+                        i++;
+                    }
+
+                    if(c==CPS) {
+                        sp = true;
+                    }
+                }
+
+                ret.args[2] = CPARMS;
+            }
+            else {
+                ret.args[2] = CNULL;
+            }
+
         }
     }
 
@@ -76,7 +104,7 @@ Module settings::getmod(string _r) {
     Module ret = Module();
     ret._base = _r;
     
-    if(ret._base=="ank"||ret._base=="/ank"||ret._base=="ANK"||ret._base=="/ANK") { ret.value=MLC_ANK; ret.name="ank"; ret.title="a network sniffer"; ret.prompt="/ank"; }
+    if(ret._base=="ank~;"||ret._base=="/ank~;"||ret._base=="ANK~;"||ret._base=="/ANK~;") { ret.value=MLC_ANK; ret.name="ank"; ret.title="a network sniffer"; ret.prompt="/ank"; }
     else {
         ret.value=MLC_BASE; ret.name=""; ret.title=""; ret.prompt="";
     }

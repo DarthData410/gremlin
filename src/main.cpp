@@ -19,8 +19,26 @@ int main() {
     cin >> rcmd;
 
     while(g.run(rcmd)) {
+        char _c=CANCHOR;
+        string _sp="";
+        
         cout << g.ret();\
         cin >> rcmd;
+        rcmd += _c;
+        
+        // Process for parms:
+        _c = cin.get();
+        while(_c!='\n') {
+            if(_c==' ') {
+                _c=CNULL;
+            }
+            rcmd += _c;
+            _c = cin.get();
+        }
+        
+        // terminate rcmd:
+        rcmd += CTERM;
+        
     }
     
     cout << g.ret() << endl;

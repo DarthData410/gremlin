@@ -1,4 +1,8 @@
 #include <iostream>
+#include <sys/time.h>
+#include <sys/timerfd.h>
+#include <filesystem>
+#include <stdio.h>
 #include <thread>
 #include <future>
 #include <deque>
@@ -14,6 +18,10 @@
 using namespace std;
 
 class modloader{
+static string logfile();
+static string getlogfile();
+static void logit(string &msg,Command _lcmd);
+
 public:
     Module _loaded_mod=Module();
     void setmod(Module _m);
@@ -34,26 +42,26 @@ public:
 
 };
 
-class lil{
-public:
-    string _opmsg;
-    lil();
-    bool run(string &msg);
-};
-
 class mb{
+
 public:
     string _modname="_";
     string _title="";
     string _prompt="";
+
+
 };
 
 class modank:public mb{
 
-static void run(string &msg);
-static void run2(string &msg);
-static void run_lil(string &msg);
+static void run(string &msg,bool _ri,bool _ru, bool _rt,double &_stat_pc, double &_stat_pt, string &_trun);
 static void run_lil_prog(string &msg,string &msgout);
+
+private:
+    const char *_tlg;
+    bool _prots[3];
+    string _prots_msg;
+    void parmset(Command _process);
 
 public:
     modank();

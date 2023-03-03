@@ -36,8 +36,53 @@ Command modloader::process(Command _process) {
             ret.msg = "";
             break;
     }
+
+    modloader::logit(ret.msg,ret);
     
     return ret;
+}
+string modloader::logfile() {
+    string ret = "";
+    
+    time_t ct;
+    time(&ct);
+    ret = "gl";
+    ret += to_string(ct);
+    ret += ".greml";
+
+    return ret;
+}
+string modloader::getlogfile() {
+    string ret = "";
+
+    // command logger dir:
+    if(!filesystem::is_directory(GREML)) { 
+        filesystem::path _gp = filesystem::path();
+	    _gp.append(GREML);
+	    filesystem::create_directories(_gp);
+    }
+
+    ret = GREML+modloader::logfile();
+    while(filesystem::is_regular_file(ret)) {
+        ret = GREML+modloader::logfile();
+    }
+
+    return ret;
+}
+void modloader::logit(string &msg,Command _lcmd) {
+
+    if(_lcmd._base!="" && _lcmd.msg!="")
+    {
+        FILE *lf;
+        string _lfs = modloader::getlogfile();
+        lf = fopen(_lfs.c_str(),"w");
+        fprintf(lf,"gremlin log for command: %s \n",_lcmd._base.c_str()); 
+        fprintf(lf,"-------------------------- \n");
+        fprintf(lf,"\n[+]-> this file: %s",_lfs.c_str());
+        fprintf(lf,"[+]-> msg: \n");
+        fprintf(lf,"  %s",_lcmd.msg.c_str());
+        fclose(lf);
+    }
 }
 
 // ank:
@@ -47,22 +92,49 @@ modank::modank() {
     _prompt = "/";
     _prompt += MOD_ANK; 
 }
+void modank::parmset(Command _process) {
+
+    if(_process.parm[0]=="TCP"||_process.parm[1]=="TCP"||_process.parm[2]=="TCP"||_process.parm[3]=="TCP") 
+    { _prots[0]=true; _prots_msg += "[+TCP]"; }
+    
+    if(_process.parm[0]=="UDP"||_process.parm[1]=="UDP"||_process.parm[2]=="UDP"||_process.parm[3]=="UDP") 
+    { _prots[1]=true; _prots_msg += "[+UDP]"; }
+
+    if(_process.parm[0]=="ICMP"||_process.parm[1]=="ICMP"||_process.parm[2]=="ICMP"||_process.parm[3]=="ICMP") 
+    { _prots[2]=true; _prots_msg += "[+ICMP]"; }
+
+}
 Command modank::process(Command _process) {
+    format f = format();
     Command ret = Command();
     ret._base = _process._base;
     char _c = '^';
+    const char *_tar_logfile;
+
+    ret.msg = "\n";
+    
+    if(_process.value==CRUN && _process.args[2]==CPARMS) {    
+        ret.msg += "   [+] - executed ank with args -> ";
+        parmset(_process);
+        ret.msg += ""+_prots_msg+" \n";
+    }
+    else if(_process.value==CRUN) {
+        // default tcp only:
+        ret.msg = "   [+] - executed ank with default [TCP] trace only \n";
+        _prots[0] = true;
+        _prots[1] = false;
+        _prots[2] = false;
+    }
     
     if(_process.value==CRUN) {
-        ret.hasargs=1;
-        ret.args[3]='Y';
-        ret.msg = "...executed ank..->";
-        //ank a = ank();
-        //ret.args[1]=a.ank_main();
-
+    
         string message = "^";
         string _msgout ="";
+        string _trun="";
+        double _spc=0,_spt=0;
         thread ptx(run_lil_prog, ref(message), ref(_msgout));
-        thread tx(run_lil, ref(message));
+        &_msgout.append("Trace on for "+_prots_msg);
+        thread tx(run, ref(message),_prots[2],_prots[1],_prots[0],ref(_spc),ref(_spt),ref(_trun));
 
         string msg_back;
         cin >> msg_back;
@@ -72,7 +144,7 @@ Command modank::process(Command _process) {
                 _qit = true;
             }
             else {
-                &_msgout.append("["+msg_back+"]~");
+                &_msgout.append("::["+msg_back+"]");
                 cin >> msg_back;
             }
         }
@@ -80,8 +152,27 @@ Command modank::process(Command _process) {
         try
         {
             &message.append("q");
-            ptx.join();
+            &_msgout.append("::[QUITING TRACE]");
             tx.join();
+            &message.append("q");
+            ptx.join();
+            system("clear");
+            ret.msg += "   [+] - captured packets -> ";
+            ret.msg += to_string(_spc);
+            ret.msg += " \n";
+            ret.msg += "   [+] - traced packets -> ";
+            ret.msg += to_string(_spt);
+            ret.msg += " \n";
+
+            double _percent = (_spt/_spc);
+            _percent = _percent * 100;
+            ret.msg += "   [+] - traced packets % -> ";
+            ret.msg += to_string(_percent);
+            ret.msg += "% \n";
+
+            ret.msg += "   [+] - trace run logs located @ -> ";
+            ret.msg += _trun;
+            ret.msg += " \n";
         }
         catch(const std::exception& e)
         {
@@ -93,26 +184,15 @@ Command modank::process(Command _process) {
     return ret;
 }
 
-void modank::run(string &msg) {
+void modank::run(string &msg,bool _ri,bool _ru, bool _rt,double &_stat_pc, double &_stat_pt, string &_trun) {
     
-    ank a = ank(ref(msg));
-    std::chrono::steady_clock::time_point tp = std::chrono::steady_clock::now() + std::chrono::seconds(5);
+    ank a = ank();
+    a.ank_main(ref(msg),_ri,_ru,_rt,ref(_stat_pc),ref(_stat_pt),ref(_trun));
+    // allow for file hanlde release:
+    std::chrono::steady_clock::time_point tp = std::chrono::steady_clock::now() + std::chrono::milliseconds(150);
 	std::this_thread::sleep_until(tp);
-    a.ank_main();
 }
 
-void modank::run_lil(string &msg) {
-
-    lil l = lil();
-    int i = 0;
-    
-    while(l.run(ref(msg))) {
-        i++;
-    }
-    system("clear");
-    cout << "  ended run_lil..." << endl;
-
-}
 
 void modank::run_lil_prog(string &msg,string &msgout) {
     format f = format();
@@ -123,7 +203,7 @@ void modank::run_lil_prog(string &msg,string &msgout) {
     mutex _m;
     deque<string> _q;
 
-    while(msg!="^q") {
+    while(msg!="^qq") {
         if(i>14) { i=0; }
         system("clear");
         _out = "";
@@ -168,15 +248,4 @@ void modank::run_lil_prog(string &msg,string &msgout) {
 
 }
 
-lil::lil() {
-
-}
-bool lil::run(string &msg) {
-    bool ret = false;
-
-    if(msg!="^q") {
-        ret = true;
-    }
-    return ret;
-}
 
