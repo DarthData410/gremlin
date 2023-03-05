@@ -690,13 +690,6 @@ void ank::genpayload(FILE *_fpd,unsigned char* data , int Size)
 		// hex line complete
 		if( i!=0 && i%16==0)   
 		{
-			fprintf(_fpd , "         ");
-			for(j=i-16 ; j<i ; j++)
-			{
-				if(data[j]>=32 && data[j]<=128) { fprintf(_fpd , "%c",(unsigned char)data[j]); }
-					else { fprintf(_fpd , "."); } 
-			}
-
 			// end payload file line
 			fprintf(_fpd , " } \n"); 
 		} 
@@ -707,15 +700,7 @@ void ank::genpayload(FILE *_fpd,unsigned char* data , int Size)
 		if( i==Size-1) 
 		{
 			for(j=0;j<15-i%16;j++) { fprintf(_fpd , "   "); }
-			
-			fprintf(_fpd , "         ");
-			
-			for(j=i-i%16 ; j<=i ; j++)
-			{
-				if(data[j]>=32 && data[j]<=128) { fprintf(_fpd , "%c",(unsigned char)data[j]); }
-					else { fprintf(_fpd , "."); }
-			}
-			
+					
 			fprintf(_fpd ,  " } \n" ); // end payload file line
 		}
 	}

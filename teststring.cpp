@@ -26,6 +26,8 @@
 #include<sys/types.h>
 #include<unistd.h>
 
+#include<locale>
+
 using namespace std;
 
 
@@ -65,6 +67,28 @@ int main() {
     lfn = "greml_";
     lfn += to_string(ct2);
     lfn += ".greml";
+
+    /*
+    
+
+
+Use localtime to convert the time_t to a struct tm. You can use strftime to print the desired data from that.
+
+char buff[20];
+time_t now = time(NULL);
+strftime(buff, 20, "%Y-%m-%d %H:%M:%S", localtime(&now));
+
+
+    
+    */
+
+    char buff[20];
+    time_t now = time(NULL);
+    strftime(buff, 20, "%Y-%m-%d %H:%M:%S", localtime(&now));
+    string _st = buff;
+
+    cout << buff << endl;
+    cout << _st << endl;
 
     cout << lfn << endl;
     cout << filesystem::is_regular_file("./greml_163741.greml");
