@@ -41,7 +41,7 @@ class TCPPacket:
             self.flags,     # Flags
             8192,           # Window
             0,              # Checksum (initial value)
-            0               # Urgent pointer
+            1               # Urgent pointer
         )
 
         pseudo_hdr = struct.pack(
@@ -65,10 +65,11 @@ if __name__ == '__main__':
     #pak = TCPPacket()
     pak = TCPPacket(
         '192.168.56.99',
-        20,
+        9099,
         dst,
-        80,
-        0b000101001  # Merry Christmas!
+        410,
+        0b000000001
+        #0b000101001  
     )
 
     s = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_TCP)

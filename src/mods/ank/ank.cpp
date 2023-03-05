@@ -25,6 +25,9 @@ picmp::picmp(struct ethhdr set_eth,struct iphdr set_iph,struct icmphdr set_icmp)
 
 
 ank::ank() {
+	_run_icmp = false;
+	_run_udp = false;
+	_run_tcp = false;
     
 }
 
@@ -559,7 +562,6 @@ void ank::writelog_udp(string _rid) {
 
 }
 
-
 void ank::writeindex(FILE *_if, string _k, string _rv,string _cv) {
 
 	fprintf(_if,"%s,",_k.c_str());
@@ -698,9 +700,7 @@ void ank::genpayload(FILE *_fpd,unsigned char* data , int Size)
 		if(i%16==0) fprintf(_fpd , "[+]-> {"); { fprintf(_fpd , " %02X",(unsigned int)data[i]); }
 				
 		if( i==Size-1) 
-		{
-			for(j=0;j<15-i%16;j++) { fprintf(_fpd , "   "); }
-					
+		{		
 			fprintf(_fpd ,  " } \n" ); // end payload file line
 		}
 	}

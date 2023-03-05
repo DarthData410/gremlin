@@ -91,7 +91,29 @@ class decyph:
 
 # usage example:
 if __name__ == '__main__':
-    c = decyph('./gremlinpy/tpl_14456.det')
+    il = './gremlinpy/ank_review/run2/det/h/ip/'
+    tl = './gremlinpy/ank_review/run2/det/h/tcp/'
+    dl = './gremlinpy/ank_review/run2/det/p/'
+    
+    print("ip header:")
+    print("**********")
+    c = decyph(il+'ip_8.det')
+    lines = c.lines()
+    for l in lines:
+        print(l)
+    
+    print("***")
+    print("tcp header:") 
+    print("***********")
+    c = decyph(tl+'tcp_8.det')
+    lines = c.lines()
+    for l in lines:
+        print(l)
+    
+    print("***")
+    print("tcp payload:") 
+    print("************")
+    c = decyph(dl+'tpl_8.det')
     lines = c.lines()
     for l in lines:
         print(l)

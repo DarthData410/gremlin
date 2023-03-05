@@ -136,6 +136,8 @@ Command modank::process(Command _process) {
         &_msgout.append("Trace on for "+_prots_msg);
         thread tx(run, ref(message),_prots[2],_prots[1],_prots[0],ref(_spc),ref(_spt),ref(_trun));
 
+        &_msgout.append("::[Processing with:"+_prots_msg+"]");
+
         string msg_back;
         cin >> msg_back;
         bool _qit = false;
