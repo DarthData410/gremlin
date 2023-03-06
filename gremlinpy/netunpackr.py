@@ -47,6 +47,7 @@ class decyph:
                     if tenc != None:
                         if tenc == 'ascii':
                             _cx = amapr.hex2char(_cx)
+                            #_cx = '.'
                             _cxt = _cxt + str(_cx)
                         else:
                             # all other types:
@@ -91,29 +92,8 @@ class decyph:
 
 # usage example:
 if __name__ == '__main__':
-    il = './gremlinpy/ank_review/run2/det/h/ip/'
-    tl = './gremlinpy/ank_review/run2/det/h/tcp/'
-    dl = './gremlinpy/ank_review/run2/det/p/'
     
-    print("ip header:")
-    print("**********")
-    c = decyph(il+'ip_8.det')
-    lines = c.lines()
-    for l in lines:
-        print(l)
-    
-    print("***")
-    print("tcp header:") 
-    print("***********")
-    c = decyph(tl+'tcp_8.det')
-    lines = c.lines()
-    for l in lines:
-        print(l)
-    
-    print("***")
-    print("tcp payload:") 
-    print("************")
-    c = decyph(dl+'tpl_8.det')
+    c = decyph('./gremlinpy/tpl_294.det')
     lines = c.lines()
     for l in lines:
         print(l)

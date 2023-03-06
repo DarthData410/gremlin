@@ -39,3 +39,14 @@ gremlinpy/ank_review/run2/det/p/tpl_7.det
 gremlinpy/ank_review/run2/det/p/tpl_8.det
 src/mods/ank/ank.o
 src/mods/modbase.o
+gremlinpy/tokr2.py
+gremlinpy/srvrs/appcli.py
+gremlinpy/srvrs/appserver.py
+gremlinpy/srvrs/echocli.py
+gremlinpy/srvrs/echosrvr.py
+gremlinpy/srvrs/libclient.py
+gremlinpy/srvrs/libserver.py
+gremlinpy/srvrs/multicon-server.py
+gremlinpy/srvrs/multiconn-cli.py
+gremlinpy/__pycache__/libclient.cpython-310.pyc
+gremlinpy/__pycache__/metactrclilib.cpython-310.pyc
