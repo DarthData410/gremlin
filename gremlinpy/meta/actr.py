@@ -1,7 +1,7 @@
 # +-------------------------------------------------------------------------------------+
 # | gremlin - PyFryLabs -> @pyfryday | darth.data410@gmail.com                          |
 # | -------                                                                             |
-# | metactr.py is a python module for the gremlin app that directs PseudoActors and     |
+# | actr.py is a python module for the gremlin app that directs PseudoActors and        |
 # | manuscripts sent from a main actor/parent to child actor/server(s). The metactr.py  |
 # | module is also used by pseudo actor(s)/child to parent actor/server to report back  |
 # | updates related to the processing of scheduled manuscripts that are being acted on  |
@@ -15,7 +15,7 @@
 import traceback
 import selectors
 import socket
-import metactrclilib as cli
+import actrclilib as cli
 
 class Actor:
 

@@ -1,0 +1,22 @@
+{
+    "document": "/meta json manuscript template",
+    "PseudoActor": "<uuid of registered PseudoActor>",
+    "ReportingPort": "<port in-which PseudoActor reports back info from manuscript acts>",
+    "ActorNow": "<Time manuscript generated from Actor perspective>",
+    "Type": "<1=recon,2=exploit>",
+    "NumOfActs": 2,
+    "Acts": {
+        "Seq01": {
+            "Command": "<command to execute>",
+            "Args": "<command args>",
+            "Output": "<output type: 1=JSON Cap Cmd Output, 2=Large Expected JSON broken seq msgs, compressed, 3=log local and 1 for success, 2 for fail>",
+            "Chrono": "<time in seconds before executing after last Act. If first will wait supplied seconds beforing starting>"
+        },
+        "Seq02": {
+            "Command": "<command to execute>",
+            "Args": "<command args>",
+            "Output": "<output type: 1=JSON Cap Cmd Output, 2=Large Expected JSON broken seq msgs, compressed, 3=log local and 1 for success, 2 for fail>",
+            "Chrono": "<time in seconds before executing after last Act. If first will wait supplied seconds beforing starting>"
+        }
+    }
+}

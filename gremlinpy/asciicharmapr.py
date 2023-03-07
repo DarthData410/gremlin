@@ -2,7 +2,7 @@
 # | gremlin - PyFryLabs -> @pyfryday | darth.data410@gmail.com                          |
 # | -------                                                                             |
 # | asciicharmapr.py is a module for the python code of gremlin that exposes a custom   |
-# | hex-bin-ascii char set conversion. Helpful in memory and net packet decoding.       |
+# | hex-bin-html-ascii char set conver. Helpful in memory and net packet decoding.      |
 # +-------------------------------------------------------------------------------------+
 # | Apache License v2.0
 # |$>
