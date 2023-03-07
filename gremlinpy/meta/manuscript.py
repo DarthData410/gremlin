@@ -8,11 +8,11 @@
 # | Apache License v2.0
 # |$>
 
-import bitstruct
+#import bitstruct
 import json
 import dataclasses as dc
-import io
-import snappy as snp #TODO: get an example of how to compress/decompress JSON file to send
+#import io
+#import snappy as snp #TODO: get an example of how to compress/decompress JSON file to send
 
 #"document": "/meta json manuscript template",
 #    "PseudoActor": "<uuid of registered PseudoActor>",

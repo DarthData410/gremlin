@@ -9,10 +9,13 @@
 # | Apache License v2.0
 # |$>
 
+import sys
+import colorama
+from colorama import Fore
 import socket
 import selectors
 import traceback
-import actrsrvrlib as srvr
+import actrlib as lib
 
 class PseudoActor:
 
@@ -35,7 +38,7 @@ class PseudoActor:
         self._sock.bind((self._host, self._port))
         self._sock.listen()
         self._sock.setblocking(False)
-        print(f"gremlin /meta - PseudoActor ready @ {(self._host, self._port)}")
+        print(""+Fore.GREEN+"gremlin"+Fore.WHITE+" /meta - "+Fore.BLUE+"PseudoActor"+Fore.WHITE+" ready @ "+Fore.BLUE+"{"+str(self._host)+","+str(self._port)+"}"+Fore.WHITE+"")
     
     def __init_selector__(self):
         self._sel = selectors.DefaultSelector()
@@ -69,20 +72,29 @@ class PseudoActor:
 
     def close_out(self):
         self._sel.close()
-        self._msgback = self._msgback + "\n [+] ---> gremlin /meta PseudoActor closed"
+        self._msgback = self._msgback + "\n [+] --->"  
+        self._msgback = self._msgback + Fore.GREEN + " gremlin " + Fore.WHITE
+        self._msgback = self._msgback + "/meta "+Fore.BLUE+"PseudoActor"+Fore.WHITE+" closed"
 
     def __accept_wrapper__(self,sock):
         conn, addr = sock.accept()  
         print(f"Accepted connection from {addr}")
         conn.setblocking(False)
-        message = srvr.Message(self._sel, conn, addr)
+        message = lib.SrvMessage(self._sel, conn, addr)
         self._sel.register(conn, selectors.EVENT_READ, data=message)
 
 
 # usage example:
 if __name__=="__main__":
-    srv = PseudoActor("192.168.56.1",41013)
-    
+    if sys.argv.__len__() != 3:
+        print(Fore.GREEN + "gremlin"+Fore.WHITE+" /meta - Pseudo-Actor"+Fore.RED+" Fault"+Fore.WHITE)
+        print("...expected "+Fore.BLUE+"pseudoactr.py <host> <port>"+Fore.WHITE+"...")
+        raise SyntaxError(Fore.RED+"SystaxError"+Fore.WHITE+" starting Pseudo-Actor")
+
+    _h = str(sys.argv[1])
+    _p = int(sys.argv[2])
+    srv = PseudoActor(_h,_p)
+
     try:
         while True:
             srv.execute()
