@@ -74,8 +74,10 @@ class manuscript:
     
     def fromdict(d):
         actsl = list()
-        for dk in d[ACTS]:
-            actsl.append(act.newfromdict(d[dk]))
+        adict = d[ACTS]
+        print(adict)
+        for dk in adict:
+            actsl.append(act.newfromdict(adict[str(dk)]))
 
         ret = manuscript(
             PseudoActor=d[PSDACT],
@@ -99,6 +101,7 @@ class manuscript:
         ret[TYPE]=self.Type
         ret[NUMOFACTS]=self.NumOfActs
         ret[ACTS]=actsd
+        return ret
 
 
 @dc.dataclass

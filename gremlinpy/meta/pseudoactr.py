@@ -100,7 +100,7 @@ class register:
         sock.setblocking(False)
         sock.connect_ex(addr)
         events = selectors.EVENT_READ | selectors.EVENT_WRITE
-        message = self.__get_message__(self._sel,sock,addr,request)
+        message = self.__get_message__(sock,addr,request)
         self._sel.register(sock, events, data=message)
 
 class ReqManuscript(register):
@@ -118,7 +118,7 @@ class ReqManuscript(register):
                 ReportPort=41001,
                 RequestNow="2023-03-08~14::15::30"
             )
-            
+
             reg = dict()
             reg["manuscript_request"]=mu.todict()
 

@@ -92,7 +92,7 @@ class Registry:
         conn, addr = sock.accept()  
         print(f"Accepted connection from {addr}")
         conn.setblocking(False)
-        msg = self.__message__(self._sel,conn,addr)
+        msg = self.__message__(conn,addr)
         self._sel.register(conn, selectors.EVENT_READ, data=msg)
 
 class ReportSrvr(Registry):
@@ -111,7 +111,7 @@ class ReportSrvr(Registry):
         self._msgback = self._msgback + Fore.GREEN + " gremlin " + Fore.WHITE
         self._msgback = self._msgback + "/meta "+Fore.BLUE+"ReportSrvr"+Fore.WHITE+" closed"
     def __message__(self,conn, addr):
-        msg = lib.RegisterMsg(self._sel, conn, addr)
+        msg = lib.ReportSrvMsg(self._sel, conn, addr)
         return msg
 
 class Actor:
