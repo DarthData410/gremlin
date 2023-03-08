@@ -14,8 +14,8 @@ import selectors
 import io
 import json
 # /meta JSON/data contracts:
-from register import *
-from manuscript import *
+from datacontracts.register import *
+from datacontracts.manuscript import *
 
 
 class CliMessage:

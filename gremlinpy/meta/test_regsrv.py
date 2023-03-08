@@ -1,12 +1,4 @@
-# +-------------------------------------------------------------------------------------+
-# | gremlin - PyFryLabs -> @pyfryday | darth.data410@gmail.com                          |
-# | -------                                                                             |
-# | regsrv.py is a python module for the gremlin app /meta mod enabling the registry    |
-# | server needs of /meta from Pseudo-Actors -> Actors.                                 |
-# | (part of /meta)                                                                     |
-# +-------------------------------------------------------------------------------------+
-# | Apache License v2.0
-# |$>
+# ---> Test
 
 import sys
 import os
