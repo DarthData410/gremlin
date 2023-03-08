@@ -17,6 +17,89 @@ import selectors
 import traceback
 import actrlib as lib
 
+class register: 
+    _sel = None
+    _host = ''
+    _port = 0
+    _action = ''
+    _value = ''
+    _pa = ''
+    _now = ''
+    
+    def __init__(self,host,port,pa,now) -> None:
+        self._sel = selectors.DefaultSelector()
+        self._host = host
+        self._port = port
+        self._pa = pa
+        self._now = now
+
+    def execute(self):
+        request = self.register_request(self._pa,self._host,self._port,self._now)
+        self.start_connection(self._host, self._port, request)
+
+        try:
+            while True:
+                events = self._sel.select(timeout=1)
+                for key, mask in events:
+                    message = key.data
+                    try:
+                        message.process_events(mask)
+                    except Exception:
+                        print(
+                            f"Main: Error: Exception for {message.addr}:\n"
+                            f"{traceback.format_exc()}"
+                        )
+                        message.close()
+                # Check for a socket being monitored to continue.
+                if not self._sel.get_map():
+                    break
+        except KeyboardInterrupt:
+            print("Caught keyboard interrupt, exiting")
+        finally:
+            self._sel.close()
+
+    def register_request(self,pa,host,port,now):
+            
+            ri = lib.reginfo (
+                PseudoActor=pa,
+                RegisterNow=now,
+                Host=host,
+                Port=port
+            )
+            reg = dict()
+            reg["register"]=ri.todict()
+
+            return dict(
+                type="text/json",
+                encoding="utf-8",
+                content=reg,
+            )
+        
+
+    def create_request(self,action, value):
+        if action == "search":
+            return dict(
+                type="text/json",
+                encoding="utf-8",
+                content=dict(action=action, value=value),
+            )
+        else:
+            return dict(
+                type="binary/custom-client-binary-type",
+                encoding="binary",
+                content=bytes(action + value, encoding="utf-8"),
+            )
+
+    def start_connection(self,host, port, request):
+        addr = (host, port)
+        print(f"Starting connection to {addr}")
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.setblocking(False)
+        sock.connect_ex(addr)
+        events = selectors.EVENT_READ | selectors.EVENT_WRITE
+        message = lib.CliMessage(self._sel, sock, addr, request)
+        self._sel.register(sock, events, data=message)
+
 class PseudoActor:
 
     _sel = None

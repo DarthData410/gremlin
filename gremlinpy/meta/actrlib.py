@@ -301,9 +301,10 @@ class SrvMessage:
         message_hdr = struct.pack(">H", len(jsonheader_bytes))
         message = message_hdr + jsonheader_bytes + content_bytes
         return message
-
+        
     def _create_response_json_content(self):
         action = self.request.get("action")
+        
         if action == "search":
             query = self.request.get("value")
             answer = request_search.get(query) or f"No match for '{query}'."
@@ -311,11 +312,14 @@ class SrvMessage:
         else:
             content = {"result": f"Error: invalid action '{action}'."}
         content_encoding = "utf-8"
+        
+        
         response = {
             "content_bytes": self._json_encode(content, content_encoding),
             "content_type": "text/json",
             "content_encoding": content_encoding,
         }
+        
         return response
 
     def _create_response_binary_content(self):
@@ -419,6 +423,7 @@ class SrvMessage:
     def create_response(self):
         if self.jsonheader["content-type"] == "text/json":
             response = self._create_response_json_content()
+            #response = self._create_registry_json_response()
         else:
             # Binary or unknown content-type
             response = self._create_response_binary_content()
@@ -431,3 +436,18 @@ class RegisterMsg(SrvMessage) :
 
     def __init__(self, selector, sock, addr):
         super().__init__(selector, sock, addr) 
+    
+    def _create_response_json_content(self):
+        _reg = self.request.get("register")
+        _regjs = json.dumps(_reg)
+        regi = reginfo.fromjson(_regjs)
+
+        reply = { "result": regi.PseudoActor + " registered..." }
+
+        encoding = "utf-8"
+        resp = {
+            "content_bytes": self._json_encode(reply, encoding),
+            "content_type": "text/json",
+            "content_encoding": encoding,
+        }
+        return resp

@@ -1,19 +1,15 @@
 # +-------------------------------------------------------------------------------------+
 # | gremlin - PyFryLabs -> @pyfryday | darth.data410@gmail.com                          |
 # | -------                                                                             |
-# | actr.py is a python module for the gremlin app that directs PseudoActors and        |
-# | manuscripts sent from a main actor/parent to child actor/server(s). The metactr.py  |
-# | module is also used by pseudo actor(s)/child to parent actor/server to report back  |
-# | updates related to the processing of scheduled manuscripts that are being acted on  |
-# | by scheduled child/pseudo actors. Such child actors typically would be running on   |
-# | multiple workstations/devices/servers to achieve a distrubuted set of acts.         |
+# | actr.py is a python module for the gremlin app that directs PseudoActors/Actors and |
+# | registry server. A single registry and actor is designed to work with multiple      |
+# | Pseudo-Actors.                                                                      |
 # | (part of /meta)                                                                     |
 # +-------------------------------------------------------------------------------------+
 # | Apache License v2.0
 # |$>
 
-import sys
-import colorama
+import sys 
 from colorama import Fore
 import traceback
 import selectors
@@ -40,7 +36,7 @@ class Registry:
         self._sock.bind((self._host, self._port))
         self._sock.listen()
         self._sock.setblocking(False)
-        print(""+Fore.GREEN+"gremlin"+Fore.WHITE+" /meta - "+Fore.BLUE+"Registry"+Fore.WHITE+" ready @ "+Fore.BLUE+"{"+str(self._host)+","+str(self._port)+"}"+Fore.WHITE+"")
+        print("\n [+] --->"+Fore.GREEN+" gremlin"+Fore.WHITE+" /meta - "+Fore.BLUE+"Registry"+Fore.WHITE+" ready @ "+Fore.BLUE+"{"+str(self._host)+","+str(self._port)+"}"+Fore.WHITE+"")
     
     def __init_selector__(self):
         self._sel = selectors.DefaultSelector()
@@ -82,8 +78,8 @@ class Registry:
         conn, addr = sock.accept()  
         print(f"Accepted connection from {addr}")
         conn.setblocking(False)
-        message = lib.SrvMessage(self._sel, conn, addr)
-        self._sel.register(conn, selectors.EVENT_READ, data=message)
+        msg = lib.RegisterMsg(self._sel, conn, addr)
+        self._sel.register(conn, selectors.EVENT_READ, data=msg)
 
 
 class Actor:
@@ -149,9 +145,3 @@ class Actor:
         events = selectors.EVENT_READ | selectors.EVENT_WRITE
         message = lib.CliMessage(self._sel, sock, addr, request)
         self._sel.register(sock, events, data=message)
-
-
-# usage example:
-#if __name__ == "__main__":
-#    act = Actor("192.168.56.10",41013,"search","/ank")
-#    act.execute()
