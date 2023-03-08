@@ -98,6 +98,15 @@ class regACK:
         d[REGED] = self.Registered
         return d
 
+    def fromdict(d):
+        ret = regACK(
+            PseudoActor=d[PSDACT],
+            ManuHost=d[MANU+HOST],
+            ManuPort=d[MANU+PORT],
+            Registered=d[REGED]
+        )
+        return ret
+
 
 # example usgae:
 if __name__=="__main__":

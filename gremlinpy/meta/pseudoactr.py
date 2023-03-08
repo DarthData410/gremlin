@@ -97,7 +97,8 @@ class register:
         sock.setblocking(False)
         sock.connect_ex(addr)
         events = selectors.EVENT_READ | selectors.EVENT_WRITE
-        message = lib.CliMessage(self._sel, sock, addr, request)
+        #message = lib.CliMessage(self._sel, sock, addr, request)
+        message = lib.CliRegACKMsg(self._sel, sock, addr, request)
         self._sel.register(sock, events, data=message)
 
 class PseudoActor:
@@ -165,7 +166,6 @@ class PseudoActor:
         conn.setblocking(False)
         message = lib.SrvMessage(self._sel, conn, addr)
         self._sel.register(conn, selectors.EVENT_READ, data=message)
-
 
 # usage example:
 if __name__=="__main__":

@@ -217,6 +217,20 @@ class CliMessage:
         # Close when response has been processed
         self.close()
 
+class CliRegACKMsg(CliMessage):
+
+    def __init__(self, selector, sock, addr, request):
+        super().__init__(selector, sock, addr, request)
+    
+    def _process_response_json_content(self):
+        content = self.response
+        result = content.get("result")
+
+        r = result 
+
+        print(f"Got result: {result}")
+        ra = regACK.fromdict(r)
+        print(ra.Registered)
 
 request_search = {
     "/meta" : "ManagEmenT & Automation module",
@@ -442,11 +456,22 @@ class RegisterMsg(SrvMessage) :
         _regjs = json.dumps(_reg)
         regi = reginfo.fromjson(_regjs)
 
-        reply = { "result": regi.PseudoActor + " registered..." }
+        # build reply:
+        rACK = regACK(
+            PseudoActor=regi.PseudoActor,
+            ManuHost=regi.Host,
+            ManuPort=regi.Port,
+            Registered=True
+        )
+
+        resultd = dict()
+        resultd["result"] = rACK.todict()
+
+        #reply = { "result": regi.PseudoActor + " registered..." }
 
         encoding = "utf-8"
         resp = {
-            "content_bytes": self._json_encode(reply, encoding),
+            "content_bytes": self._json_encode(resultd, encoding),
             "content_type": "text/json",
             "content_encoding": encoding,
         }

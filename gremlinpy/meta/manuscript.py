@@ -8,35 +8,13 @@
 # | Apache License v2.0
 # |$>
 
-#import bitstruct
 import json
 import dataclasses as dc
-#import io
-#import snappy as snp #TODO: get an example of how to compress/decompress JSON file to send
-
-#"document": "/meta json manuscript template",
-#    "PseudoActor": "<uuid of registered PseudoActor>",
-#    "ReportingPort": "<port in-which PseudoActor reports back info from manuscript acts>",
-#    "ActorNow": "<Time manuscript generated from Actor perspective>",
-#    "Type": "<1=recon,2=exploit>",
-#    "NumOfActs": 2,
-#    "Acts": {
-#        "Seq01": {
-#            "Command": "<command to execute>",
-#            "Args": "<command args>",
-#            "Output": "<output type: 1=JSON Cap Cmd Output, 2=Large Expected JSON broken seq msgs, compressed, 3=log local and 1 for success, 2 for fail>",
-#            "Chrono": "<time in seconds before executing after last Act. If first will wait supplied seconds beforing starting>"
-#        },
-#        "Seq02": {
-#            "Command": "<command to execute>",
-#            "Args": "<command args>",
-#            "Output": "<output type: 1=JSON Cap Cmd Output, 2=Large Expected JSON broken seq msgs, compressed, 3=log local and 1 for success, 2 for fail>",
-#            "Chrono": "<time in seconds before executing after last Act. If first will wait supplied seconds beforing starting>"
-#        }
-#    }
 
 PSDACT="PseudoActor"
+REPHOST="ReportingHost"
 REPPORT="ReportingPort"
+REQNOW="RequestNow"
 ACTNOW="ActorNow"
 TYPE="Type"
 NUMOFACTS="NumOfActs"
@@ -94,7 +72,6 @@ class manuscript:
         ret = json.dumps(d)
         return ret
 
-
 @dc.dataclass
 class act:
     Seq: str
@@ -124,37 +101,26 @@ class act:
         ret = d
         return ret
 
-if __name__ == "__main__":
-    
-    a1 = act(
-        Seq="Seq1",
-        Command="Test1",
-        Args="Arg1,Arg2",
-        Output=1,
-        Chrono=30
-    )
-    
-    a2 = act(
-        Seq="Seq2",
-        Command="Test2",
-        Args="Arg1",
-        Output=1,
-        Chrono=120
-    )
+@dc.dataclass
+class RequestManuscript:
+    PseudoActor: str
+    ReportHost: str
+    ReportPort: int
+    RequestNow: str
 
-    m = manuscript
-    m.PseudoActor = "x23-78p-qs47-2z"
-    m.ReportingPort = 41013
-    m.ActorNow = "2023-03-07~12::13::44"
-    m.Type = 1
-    m.NumOfActs = 2
-    al = list()
-    al.append(a1)
-    al.append(a2)
-    m.Acts = al
-
-    jsonobj = m.tojson(m)
-    print(jsonobj)
-    mret = manuscript.fromjson(jsonobj)
-    print(mret)
+    def newfromdict(d):
+        ret = RequestManuscript(
+            PseudoActor=d[PSDACT],
+            ReportHost=d[REPHOST],
+            ReportPort=d[REPPORT],
+            RequestNow=d[REQNOW]
+        )
+        return ret
     
+    def todict(self):
+        ret = dict()
+        ret[PSDACT] = self.PseudoActor
+        ret[REPHOST] = self.ReportHost
+        ret[REPPORT] = self.ReportPort
+        ret[REQNOW] = self.RequestNow
+        return ret
