@@ -232,6 +232,23 @@ class CliRegACKMsg(CliMessage):
         ra = regACK.fromdict(r)
         print(ra.Registered)
 
+class CliReqManuscript(CliMessage):
+    def __init__(self, selector, sock, addr, request):
+        super().__init__(selector, sock, addr, request)
+    
+    def _process_response_json_content(self):
+        content = self.response
+        result = content.get("result")
+
+        r = result 
+
+        print(f"Got result: {result}")
+        manu = manuscript.fromdict(r)
+        print(manu.PseudoActor)
+        print(manu.ActorNow)
+        print(manu.NumOfActs)
+
+
 request_search = {
     "/meta" : "ManagEmenT & Automation module",
     "/ank": "A NetworK sniffer",
@@ -445,7 +462,6 @@ class SrvMessage:
         self.response_created = True
         self._send_buffer += message
 
-
 class RegisterMsg(SrvMessage) : 
 
     def __init__(self, selector, sock, addr):
@@ -467,7 +483,47 @@ class RegisterMsg(SrvMessage) :
         resultd = dict()
         resultd["result"] = rACK.todict()
 
-        #reply = { "result": regi.PseudoActor + " registered..." }
+        encoding = "utf-8"
+        resp = {
+            "content_bytes": self._json_encode(resultd, encoding),
+            "content_type": "text/json",
+            "content_encoding": encoding,
+        }
+        return resp
+
+class ReportSrvMsg(SrvMessage) : 
+
+    def __init__(self, selector, sock, addr):
+        super().__init__(selector, sock, addr) 
+    
+    def _create_response_json_content(self):
+        _reg = self.request.get("manuscript_request")
+        regi = RequestManuscript.fromdict(_reg)
+
+        print(regi.PseudoActor)
+        print(regi.RequestNow)
+
+        al = list()
+        a = act(
+            Seq="01",
+            Command="/Test1",
+            Args="Arg1",
+            Output=1,
+            Chrono=30
+        )
+        al.append(a)
+
+        retManu = manuscript(
+            PseudoActor=regi.PseudoActor,
+            ReportingPort=regi.ReportPort,
+            ActorNow=regi.RequestNow,
+            Type=1,
+            NumOfActs=1,
+            Acts=al
+        )
+
+        resultd = dict()
+        resultd["result"] = retManu.todict()
 
         encoding = "utf-8"
         resp = {

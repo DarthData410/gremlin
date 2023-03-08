@@ -71,6 +71,35 @@ class manuscript:
 
         ret = json.dumps(d)
         return ret
+    
+    def fromdict(d):
+        actsl = list()
+        for dk in d[ACTS]:
+            actsl.append(act.newfromdict(d[dk]))
+
+        ret = manuscript(
+            PseudoActor=d[PSDACT],
+            ReportingPort=d[REPPORT],
+            ActorNow=d[ACTNOW],
+            Type=d[TYPE],
+            NumOfActs=d[NUMOFACTS],
+            Acts=actsl
+        )
+        return ret
+    
+    def todict(self):
+        ret = dict()
+        actsd = dict()
+        for ea in self.Acts:
+            actsd[ea.Seq]=ea.todict()
+
+        ret[PSDACT]=self.PseudoActor
+        ret[REPPORT]=self.ReportingPort
+        ret[ACTNOW]=self.ActorNow
+        ret[TYPE]=self.Type
+        ret[NUMOFACTS]=self.NumOfActs
+        ret[ACTS]=actsd
+
 
 @dc.dataclass
 class act:
@@ -123,4 +152,13 @@ class RequestManuscript:
         ret[REPHOST] = self.ReportHost
         ret[REPPORT] = self.ReportPort
         ret[REQNOW] = self.RequestNow
+        return ret
+
+    def fromdict(d):
+        ret = RequestManuscript(
+            PseudoActor=d[PSDACT],
+            ReportHost=d[REPHOST],
+            ReportPort=d[REPPORT],
+            RequestNow=d[REQNOW]
+        )
         return ret

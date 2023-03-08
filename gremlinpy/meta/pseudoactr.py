@@ -89,6 +89,9 @@ class register:
                 encoding="binary",
                 content=bytes(action + value, encoding="utf-8"),
             )
+    def __get_message__(self,sock,addr,request):
+        message = lib.CliRegACKMsg(self._sel, sock, addr, request)
+        return message
 
     def start_connection(self,host, port, request):
         addr = (host, port)
@@ -97,9 +100,33 @@ class register:
         sock.setblocking(False)
         sock.connect_ex(addr)
         events = selectors.EVENT_READ | selectors.EVENT_WRITE
-        #message = lib.CliMessage(self._sel, sock, addr, request)
-        message = lib.CliRegACKMsg(self._sel, sock, addr, request)
+        message = self.__get_message__(self._sel,sock,addr,request)
         self._sel.register(sock, events, data=message)
+
+class ReqManuscript(register):
+
+    def __init__(self, host, port, pa, now) -> None:
+        super().__init__(host, port, pa, now)
+    def __get_message__(self, sock, addr, request):
+        message = lib.CliReqManuscript(self._sel, sock, addr, request)
+        return message
+    def register_request(self,pa,host,port,now):
+            
+            mu = lib.RequestManuscript(
+                PseudoActor="zz::41::82::34::23::12::zz",
+                ReportHost="192.168.56.1",
+                ReportPort=41001,
+                RequestNow="2023-03-08~14::15::30"
+            )
+            
+            reg = dict()
+            reg["manuscript_request"]=mu.todict()
+
+            return dict(
+                type="text/json",
+                encoding="utf-8",
+                content=reg,
+            )
 
 class PseudoActor:
 

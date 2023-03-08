@@ -30,13 +30,16 @@ class Registry:
         self.__init_listen__()
         self.__init_selector__()
     
+    def __message_out__(self):
+        print("\n [+] --->"+Fore.GREEN+" gremlin"+Fore.WHITE+" /meta - "+Fore.BLUE+"Registry"+Fore.WHITE+" ready @ "+Fore.BLUE+"{"+str(self._host)+","+str(self._port)+"}"+Fore.WHITE+"")
+
     def __init_listen__(self):
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self._sock.bind((self._host, self._port))
         self._sock.listen()
         self._sock.setblocking(False)
-        print("\n [+] --->"+Fore.GREEN+" gremlin"+Fore.WHITE+" /meta - "+Fore.BLUE+"Registry"+Fore.WHITE+" ready @ "+Fore.BLUE+"{"+str(self._host)+","+str(self._port)+"}"+Fore.WHITE+"")
+        self.__message_out__()
     
     def __init_selector__(self):
         self._sel = selectors.DefaultSelector()
@@ -47,6 +50,13 @@ class Registry:
     def msgback(self) -> str:
         return self._msgback
     
+    def __print_except__(self,addr):
+        eadr = addr
+        print(
+            f""+Fore.GREEN+"gremlin"+Fore.WHITE+" /meta "+Fore.RED+"Registry fault"+Fore.WHITE+": "+eadr+":\n"
+            f"{self._msgback}"
+        )
+
     def execute(self):
         """ main execution point fired from gremlin /meta -Registry ! """
 
@@ -61,26 +71,48 @@ class Registry:
                     message.process_events(mask)
                 except Exception:
                     self._msgback = f"PAF: {message.addr} = " + traceback.format_exc()
-                    print(
-                        f"gremlin /meta Registry fault: {message.addr}:\n"
-                        f"{self._msgback}"
-                    )
+                    self.__print_except__(message.addr)
                     self._iserror = True
                     message.close()
 
-    def close_out(self):
-        self._sel.close()
+    def __print_closeout_msg__(self):
         self._msgback = self._msgback + "\n [+] --->"  
         self._msgback = self._msgback + Fore.GREEN + " gremlin " + Fore.WHITE
         self._msgback = self._msgback + "/meta "+Fore.BLUE+"Registry"+Fore.WHITE+" closed"
+
+    def close_out(self):
+        self._sel.close()
+        self.__print_closeout_msg__()
+    
+    def __message__(self,conn, addr):
+        msg = lib.RegisterMsg(self._sel, conn, addr)
+        return msg
 
     def __accept_wrapper__(self,sock):
         conn, addr = sock.accept()  
         print(f"Accepted connection from {addr}")
         conn.setblocking(False)
-        msg = lib.RegisterMsg(self._sel, conn, addr)
+        msg = self.__message__(self._sel,conn,addr)
         self._sel.register(conn, selectors.EVENT_READ, data=msg)
 
+class ReportSrvr(Registry):
+
+    def __init__(self, host, port) -> None:
+        super().__init__(host, port)
+    def __message_out__(self):
+        print("\n [+] --->"+Fore.GREEN+" gremlin"+Fore.WHITE+" /meta - "+Fore.BLUE+"ReportSrvr"+Fore.WHITE+" ready @ "+Fore.BLUE+"{"+str(self._host)+","+str(self._port)+"}"+Fore.WHITE+"")
+    def __print_except__(self,addr):
+        print(
+            f""+Fore.GREEN+"gremlin"+Fore.WHITE+" /meta "+Fore.RED+"ReportSrvr fault"+Fore.WHITE+": "+addr+":\n"
+            f"{self._msgback}"
+        )
+    def __print_closeout_msg__(self):
+        self._msgback = self._msgback + "\n [+] --->"  
+        self._msgback = self._msgback + Fore.GREEN + " gremlin " + Fore.WHITE
+        self._msgback = self._msgback + "/meta "+Fore.BLUE+"ReportSrvr"+Fore.WHITE+" closed"
+    def __message__(self,conn, addr):
+        msg = lib.RegisterMsg(self._sel, conn, addr)
+        return msg
 
 class Actor:
 
