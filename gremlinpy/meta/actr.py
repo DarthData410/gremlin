@@ -16,6 +16,7 @@ import selectors
 import socket
 import actrlib as lib
 
+# registry server:
 class Registry:
     _sel = None
     _host = ''
@@ -52,10 +53,8 @@ class Registry:
     
     def __print_except__(self,addr):
         eadr = addr
-        print(
-            f""+Fore.GREEN+"gremlin"+Fore.WHITE+" /meta "+Fore.RED+"Registry fault"+Fore.WHITE+": "+eadr+":\n"
-            f"{self._msgback}"
-        )
+        print(""+Fore.GREEN+"gremlin"+Fore.WHITE+" /meta "+Fore.RED+"Registry fault"+Fore.WHITE+":"+str(eadr[0])+":"+str(eadr[1]))
+        print(self._msgback)
 
     def execute(self):
         """ main execution point fired from gremlin /meta -Registry ! """
@@ -95,6 +94,7 @@ class Registry:
         msg = self.__message__(conn,addr)
         self._sel.register(conn, selectors.EVENT_READ, data=msg)
 
+# report server:
 class ReportSrvr(Registry):
 
     def __init__(self, host, port) -> None:
@@ -113,67 +113,3 @@ class ReportSrvr(Registry):
     def __message__(self,conn, addr):
         msg = lib.ReportSrvMsg(self._sel, conn, addr)
         return msg
-
-class Actor:
-
-    _sel = None
-    _host = ''
-    _port = 0
-    _action = ''
-    _value = ''
-    
-    def __init__(self,host,port,action,value) -> None:
-        self._sel = selectors.DefaultSelector()
-        self._host = host
-        self._port = port
-        self._action = action
-        self._value = value
-
-    def execute(self):
-        request = self.create_request(self._action, self._value)
-        self.start_connection(self._host, self._port, request)
-
-        try:
-            while True:
-                events = self._sel.select(timeout=1)
-                for key, mask in events:
-                    message = key.data
-                    try:
-                        message.process_events(mask)
-                    except Exception:
-                        print(
-                            f"Main: Error: Exception for {message.addr}:\n"
-                            f"{traceback.format_exc()}"
-                        )
-                        message.close()
-                # Check for a socket being monitored to continue.
-                if not self._sel.get_map():
-                    break
-        except KeyboardInterrupt:
-            print("Caught keyboard interrupt, exiting")
-        finally:
-            self._sel.close()
-
-    def create_request(self,action, value):
-        if action == "search":
-            return dict(
-                type="text/json",
-                encoding="utf-8",
-                content=dict(action=action, value=value),
-            )
-        else:
-            return dict(
-                type="binary/custom-client-binary-type",
-                encoding="binary",
-                content=bytes(action + value, encoding="utf-8"),
-            )
-
-    def start_connection(self,host, port, request):
-        addr = (host, port)
-        print(f"Starting connection to {addr}")
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.setblocking(False)
-        sock.connect_ex(addr)
-        events = selectors.EVENT_READ | selectors.EVENT_WRITE
-        message = lib.CliMessage(self._sel, sock, addr, request)
-        self._sel.register(sock, events, data=message)

@@ -28,19 +28,17 @@ def getnow() -> str:
 @dc.dataclass
 class REQ:
     ReqID: str
-    HostFrom: str
-    HostPort: int
+    PseudoActor: str
     ToHost: str
     ToPort: int
     ReqMsg: str
     Type: int
     ReqNow: str
 
-    def create(From,FrmPort,To,ToPort,Msg,Type):
+    def create(Pseudo,To,ToPort,Msg,Type):
         ret = REQ(
             ReqID = genuid(),
-            HostFrom=From,
-            HostPort=FrmPort,
+            PseudoActor=Pseudo,
             ToHost=To,
             ToPort=ToPort,
             ReqMsg=Msg,
@@ -51,8 +49,7 @@ class REQ:
     def todict(self):
         ret = dict()
         ret["ReqID"]=self.ReqID
-        ret["HostFrom"]=self.HostFrom
-        ret["HostPort"]=self.HostPort
+        ret["PseudoActor"]=self.PseudoActor
         ret["ToHost"]=self.ToHost
         ret["ToPort"]=self.ToPort
         ret["ReqMsg"]=self.ReqMsg
@@ -62,8 +59,7 @@ class REQ:
     def fromdict(d):
         ret = REQ(
             ReqID=d["ReqID"],
-            HostFrom=d["HostFrom"],
-            HostPort=d["HostPort"],
+            PseudoActor=d["PseudoActor"],
             ToHost=d["ToHost"],
             ToPort=d["ToPort"],
             ReqMsg=d["ReqMsg"],

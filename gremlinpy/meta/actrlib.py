@@ -19,7 +19,7 @@ from datacontracts.register import *
 from datacontracts.manuscript import *
 from datacontracts.datasys import *
 
-
+# Client Message Operations:
 class CliMessage:
     def __init__(self, selector, sock, addr, request):
         self.selector = selector
@@ -32,6 +32,10 @@ class CliMessage:
         self._jsonheader_len = None
         self.jsonheader = None
         self.response = None
+        self.result = None
+
+    def return_result(self):
+        return self.result
 
     def _set_selector_events_mask(self, mode):
         """Set selector to listen for events: mode is 'r', 'w', or 'rw'."""
@@ -221,18 +225,17 @@ class CliMessage:
 
 class CliRegACKMsg(CliMessage):
 
+
     def __init__(self, selector, sock, addr, request):
         super().__init__(selector, sock, addr, request)
     
     def _process_response_json_content(self):
         content = self.response
         result = content.get("result")
-
         r = result 
-
-        print(f"Got result: {result}")
         ra = regACK.fromdict(r)
-        print(ra.Registered)
+        self.result = ra
+    
 
 class CliReqManuscript(CliMessage):
     def __init__(self, selector, sock, addr, request):
@@ -246,6 +249,7 @@ class CliReqManuscript(CliMessage):
 
         print(f"Got result: {result}")
         manu = manuscript.fromdict(r)
+        self.result = manu
         print(manu.PseudoActor)
         print(manu.ActorNow)
         print(manu.NumOfActs)
@@ -259,6 +263,7 @@ class CliReqHeartBeat(CliMessage):
         result = content.get("result")
 
         hback = ACK.fromdict(result)
+        self.result = hback
         print(hback)
 
 class CliReqActUpdate(CliMessage):
@@ -270,17 +275,10 @@ class CliReqActUpdate(CliMessage):
         result = content.get("result")
         print(Fore.GREEN+" *** RESPNOSE->ReportSrvr::CliReqActUpdate::ACK ***"+Fore.WHITE)
         hback = ACK.fromdict(result)
+        self.result = hback
         print(hback)
         
-
-
-request_search = {
-    "/meta" : "ManagEmenT & Automation module",
-    "/ank": "A NetworK sniffer",
-    "/frog": "For Real keylOgGer",
-    "/sfw": " Simple FireWall",
-}
-
+# Server Message Operations:        
 class SrvMessage:
     def __init__(self, selector, sock, addr):
         self.selector = selector
@@ -320,7 +318,7 @@ class SrvMessage:
 
     def _write(self):
         if self._send_buffer:
-            print(f"Sending {self._send_buffer!r} to {self.addr}")
+            #print(f"Sending {self._send_buffer!r} to {self.addr}")
             try:
                 # Should be ready to write
                 sent = self.sock.send(self._send_buffer)
@@ -359,17 +357,11 @@ class SrvMessage:
         return message
         
     def _create_response_json_content(self):
-        action = self.request.get("action")
         
-        if action == "search":
-            query = self.request.get("value")
-            answer = request_search.get(query) or f"No match for '{query}'."
-            content = {"result": answer}
-        else:
-            content = {"result": f"Error: invalid action '{action}'."}
+        #default:
+        content = {"result": "GENERIC RETURN|INVALID REQ"}
         content_encoding = "utf-8"
-        
-        
+
         response = {
             "content_bytes": self._json_encode(content, content_encoding),
             "content_type": "text/json",
@@ -465,7 +457,8 @@ class SrvMessage:
         if self.jsonheader["content-type"] == "text/json":
             encoding = self.jsonheader["content-encoding"]
             self.request = self._json_decode(data, encoding)
-            print(f"Received request {self.request!r} from {self.addr}")
+            print(Fore.BLUE+"...processing request from: "+Fore.GREEN+str(self.addr[0])+"@"+str(self.addr[1])+Fore.WHITE)
+            #print(f"Received request {self.request!r} from {self.addr}")
         else:
             # Binary or unknown content-type
             self.request = data
@@ -525,17 +518,12 @@ class ReportSrvMsg(SrvMessage) :
     def __act_result_response__(self): 
         _req = self.request.get("actupdate_request")
         r = REQ.fromdict(_req)
-
-        print(Fore.BLUE+"*** ARR::REQ ***:"+Fore.WHITE)
-        print(r)
+    
+        print(Fore.BLUE+"*** ARR::REQ::"+r.ReqID+" ***:"+Fore.WHITE)
         au = actUpdate.fromdict(r.ReqMsg)
-        print(Fore.YELLOW+"*** ARR::REQ::AU ***:"+Fore.WHITE)
-        print(au)
-        a = au.UpAct
-        print(Fore.GREEN+"*** ARR::REQ::AU::A ***:"+Fore.WHITE)
-        print(a)
-        a = act.fromdict(a)
-
+        print(Fore.YELLOW+"*** ARR::REQ::AU::PA::"+r.PseudoActor+" ***:"+Fore.WHITE)
+        a = act.fromdict(au.UpAct)
+        print(Fore.GREEN+"*** ARR::REQ::AU::A::"+a.Seq+" ***:"+Fore.WHITE)
         ra = ACK.fromreq(r)
         ra.AckMsg = "ACK::"+a.Seq+"::"+a.Command # TODO move to a build out from act
 
@@ -553,9 +541,7 @@ class ReportSrvMsg(SrvMessage) :
     def __heartbeat_response__(self):
         _req = self.request.get("heartbeat_request")
         r = REQ.fromdict(_req)
-
-        print(r)
-
+        print("...heartbeat: "+Fore.GREEN+r.PseudoActor)
         ra = ACK.fromreq(r)
 
         resultd = dict()
@@ -573,8 +559,7 @@ class ReportSrvMsg(SrvMessage) :
         _reg = self.request.get("manuscript_request")
         regi = RequestManuscript.fromdict(_reg)
 
-        print(regi.PseudoActor)
-        print(regi.RequestNow)
+        print("...manuscript for: "+Fore.GREEN+regi.PseudoActor+Fore.WHITE+" @ "+Fore.BLUE+regi.RequestNow+Fore.WHITE)
 
         al = list()
         a = act(
