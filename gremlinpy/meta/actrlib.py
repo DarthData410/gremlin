@@ -13,9 +13,11 @@ import struct
 import selectors
 import io
 import json
+from colorama import Fore
 # /meta JSON/data contracts:
 from datacontracts.register import *
 from datacontracts.manuscript import *
+from datacontracts.datasys import *
 
 
 class CliMessage:
@@ -248,6 +250,29 @@ class CliReqManuscript(CliMessage):
         print(manu.ActorNow)
         print(manu.NumOfActs)
 
+class CliReqHeartBeat(CliMessage):
+    def __init__(self, selector, sock, addr, request):
+        super().__init__(selector, sock, addr, request)
+    
+    def _process_response_json_content(self):
+        content = self.response
+        result = content.get("result")
+
+        hback = ACK.fromdict(result)
+        print(hback)
+
+class CliReqActUpdate(CliMessage):
+    def __init__(self, selector, sock, addr, request):
+        super().__init__(selector, sock, addr, request)
+    
+    def _process_response_json_content(self):
+        content = self.response
+        result = content.get("result")
+        print(Fore.GREEN+" *** RESPNOSE->ReportSrvr::CliReqActUpdate::ACK ***"+Fore.WHITE)
+        hback = ACK.fromdict(result)
+        print(hback)
+        
+
 
 request_search = {
     "/meta" : "ManagEmenT & Automation module",
@@ -467,6 +492,7 @@ class RegisterMsg(SrvMessage) :
     def __init__(self, selector, sock, addr):
         super().__init__(selector, sock, addr) 
     
+    
     def _create_response_json_content(self):
         _reg = self.request.get("register")
         _regjs = json.dumps(_reg)
@@ -496,7 +522,54 @@ class ReportSrvMsg(SrvMessage) :
     def __init__(self, selector, sock, addr):
         super().__init__(selector, sock, addr) 
     
-    def _create_response_json_content(self):
+    def __act_result_response__(self): 
+        _req = self.request.get("actupdate_request")
+        r = REQ.fromdict(_req)
+
+        print(Fore.BLUE+"*** ARR::REQ ***:"+Fore.WHITE)
+        print(r)
+        au = actUpdate.fromdict(r.ReqMsg)
+        print(Fore.YELLOW+"*** ARR::REQ::AU ***:"+Fore.WHITE)
+        print(au)
+        a = au.UpAct
+        print(Fore.GREEN+"*** ARR::REQ::AU::A ***:"+Fore.WHITE)
+        print(a)
+        a = act.fromdict(a)
+
+        ra = ACK.fromreq(r)
+        ra.AckMsg = "ACK::"+a.Seq+"::"+a.Command # TODO move to a build out from act
+
+        resultd = dict()
+        resultd["result"] = ra.todict()
+
+        encoding = "utf-8"
+        resp = {
+            "content_bytes": self._json_encode(resultd, encoding),
+            "content_type": "text/json",
+            "content_encoding": encoding,
+        }
+        return resp
+
+    def __heartbeat_response__(self):
+        _req = self.request.get("heartbeat_request")
+        r = REQ.fromdict(_req)
+
+        print(r)
+
+        ra = ACK.fromreq(r)
+
+        resultd = dict()
+        resultd["result"] = ra.todict()
+
+        encoding = "utf-8"
+        resp = {
+            "content_bytes": self._json_encode(resultd, encoding),
+            "content_type": "text/json",
+            "content_encoding": encoding,
+        }
+        return resp
+    
+    def __manuscript_response__(self):
         _reg = self.request.get("manuscript_request")
         regi = RequestManuscript.fromdict(_reg)
 
@@ -532,3 +605,33 @@ class ReportSrvMsg(SrvMessage) :
             "content_encoding": encoding,
         }
         return resp
+
+    def _create_response_json_content(self):
+        
+        # detect request type:
+        if self.request.__contains__("heartbeat_request"):
+            return self.__heartbeat_response__()
+        elif self.request.__contains__("manuscript_request"):
+            return self.__manuscript_response__()
+        elif self.request.__contains__("actupdate_request"):
+            return self.__act_result_response__()
+        else:
+            # generic ACK back to NVREQ = Non-Valid REQuest
+            genACK = ACK(
+                HostFrom=self.addr,
+                HostPort=0,
+                AckMsg="NVREQ",
+                AckNow=getnow(),
+                ReqID=genuid()
+            )
+
+            resultd = dict()
+            resultd["result"] = genACK.todict()
+
+            encoding = "utf-8"
+            resp = {
+                "content_bytes": self._json_encode(resultd, encoding),
+                "content_type": "text/json",
+                "content_encoding": encoding,
+            }
+            return resp

@@ -128,6 +128,77 @@ class ReqManuscript(register):
                 content=reg,
             )
 
+class ReqHeartBeat(register):
+    """ heartbeat REQ<->ACK between Pseudo-Actor<->Actor/ReportSrv """
+    def __init__(self, host, port, pa, now) -> None:
+        super().__init__(host, port, pa, now)
+    def __get_message__(self, sock, addr, request):
+        message = lib.CliReqHeartBeat(self._sel, sock, addr, request)
+        return message
+    def register_request(self,pa,host,port,now):
+            
+            req = lib.REQ.create(
+                From="192.168.56.10",
+                FrmPort=0,
+                To=host,
+                ToPort=port,
+                Msg="heartbeat",
+                Type=1
+            )
+
+
+            reg = dict()
+            reg["heartbeat_request"]=req.todict()
+
+            return dict(
+                type="text/json",
+                encoding="utf-8",
+                content=reg,
+            )
+    
+class ReqActUpdate(register):
+    """ update for when Act is completed. """
+    
+    _actup = None
+    _status = None
+    _upresult = None
+
+    def __init__(self, host, port, pa, now, aup, st, res) -> None:
+        super().__init__(host, port, pa, now)
+        self._actup = aup
+        self._status = st
+        self._upresult = res
+    def __get_message__(self, sock, addr, request):
+        message = lib.CliReqActUpdate(self._sel, sock, addr, request)
+        return message
+    def register_request(self,pa,host,port,now):
+            
+            # build act update from aup, st, res passed on instance init:
+            au = lib.actUpdate(
+                UpAct=self._actup,
+                UpNow=now,
+                Status=self._status,
+                UpMsg=self._upresult
+            )
+            
+            req = lib.REQ.create(
+                From="192.168.56.10",
+                FrmPort=0,
+                To=host,
+                ToPort=port,
+                Msg=au.todict(),
+                Type=1
+            )
+
+            reg = dict()
+            reg["actupdate_request"]=req.todict()
+
+            return dict(
+                type="text/json",
+                encoding="utf-8",
+                content=reg,
+            )
+
 class PseudoActor:
 
     _sel = None

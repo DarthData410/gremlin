@@ -48,6 +48,29 @@ class REQ:
             ReqNow = getnow()
         )
         return ret
+    def todict(self):
+        ret = dict()
+        ret["ReqID"]=self.ReqID
+        ret["HostFrom"]=self.HostFrom
+        ret["HostPort"]=self.HostPort
+        ret["ToHost"]=self.ToHost
+        ret["ToPort"]=self.ToPort
+        ret["ReqMsg"]=self.ReqMsg
+        ret["Type"]=self.Type
+        ret["ReqNow"]=self.ReqNow
+        return ret
+    def fromdict(d):
+        ret = REQ(
+            ReqID=d["ReqID"],
+            HostFrom=d["HostFrom"],
+            HostPort=d["HostPort"],
+            ToHost=d["ToHost"],
+            ToPort=d["ToPort"],
+            ReqMsg=d["ReqMsg"],
+            Type=d["Type"],
+            ReqNow=d["ReqNow"]
+        )
+        return ret
 
 @dc.dataclass
 class ACK:
@@ -65,6 +88,23 @@ class ACK:
             AckNow=getnow(),
             ReqID=req.ReqID
         )
+        return ret
+    def fromdict(d):
+        ret = ACK(
+            HostFrom=d["HostFrom"],
+            HostPort=d["HostPort"],
+            AckMsg=d["AckMsg"],
+            AckNow=d["AckNow"],
+            ReqID=d["ReqID"]
+        )
+        return ret
+    def todict(self):
+        ret = dict()
+        ret["HostFrom"]=self.HostFrom
+        ret["HostPort"]=self.HostPort
+        ret["AckMsg"]=self.AckMsg
+        ret["AckNow"]=self.AckNow
+        ret["ReqID"]=self.ReqID
         return ret
 
 @dc.dataclass

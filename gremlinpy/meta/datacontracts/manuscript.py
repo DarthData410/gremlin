@@ -132,6 +132,38 @@ class act:
         d[CHRONO] = self.Chrono
         ret = d
         return ret
+    def fromdict(d):
+        ret = act(
+            Seq=d[SEQ],
+            Command=d[COMM],
+            Args=d[ARGS],
+            Output=d[OUT],
+            Chrono=d[CHRONO]
+        )
+        return ret
+
+@dc.dataclass
+class actUpdate:
+    UpAct: act
+    UpNow: str
+    Status: int
+    UpMsg: str
+
+    def fromdict(d):
+        ret = actUpdate(
+            UpAct=d["UpAct"],
+            UpNow=d["UpNow"],
+            Status=d["Status"],
+            UpMsg=d["UpMsg"]
+        )
+        return ret
+    def todict(a):
+        ret = dict()
+        ret["UpAct"]=a.UpAct.todict()
+        ret["UpNow"]=a.UpNow
+        ret["Status"]=a.Status
+        ret["UpMsg"]=a.UpMsg
+        return ret
 
 @dc.dataclass
 class RequestManuscript:
