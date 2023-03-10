@@ -684,6 +684,18 @@ void ank::writelog_icmp(unsigned char* Buffer , int Size)
 	fprintf(_lgf , "\n###########################################################");
 } */
 
+std::vector<char> ank::HexToBytes(const std::string& hex) {
+	std::vector<char> bytes;
+
+        for (unsigned int i = 0; i < hex.length(); i += 2) {
+            std::string byteString = hex.substr(i, 2);
+            char byte = (char) strtol(byteString.c_str(), NULL, 16); // Actual onversion line
+            bytes.push_back(byte);
+        }
+
+        return bytes;
+}
+
 void ank::genpayload(FILE *_fpd,unsigned char* data , int Size)
 {
 	int i , j;
@@ -697,7 +709,16 @@ void ank::genpayload(FILE *_fpd,unsigned char* data , int Size)
 		} 
 		
 		// start payload file line
-		if(i%16==0) fprintf(_fpd , "[+]-> {"); { fprintf(_fpd , " %02X",(unsigned int)data[i]); }
+		if(i%16==0) { fprintf(_fpd , "[+]-> {"); }
+			/*else {
+				const std::string& _h = to_string(data[i]);
+				vector<char> byte = HexToBytes(_h);
+				for(char c : byte) {
+					fprintf(_fpd," %s",to_string(c).c_str());
+				}
+			}*/
+			//else { fprintf(_fpd , " %02X",(unsigned int)data[i]); }
+			else { fprintf(_fpd," %i",(unsigned int)data[i]); }
 				
 		if( i==Size-1) 
 		{		

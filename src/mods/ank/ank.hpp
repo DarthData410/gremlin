@@ -98,7 +98,7 @@ public:
     string runid();
 
     void print_icmp_packet(unsigned char* , int );
-    
+    std::vector<char> HexToBytes(const std::string& hex);
     void genpayload(FILE *_fpd,unsigned char* , int);
     void ank_main(string &msg,bool _ricmp,bool _rudp,bool _rtcp,double &_spc, double &_spt, string &_trun);
     

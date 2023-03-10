@@ -30,7 +30,7 @@
 
 using namespace std;
 
-
+/*
 int main() {
 
     struct ethhdr _eth;
@@ -66,7 +66,7 @@ int main() {
     time(&ct2);
     lfn = "greml_";
     lfn += to_string(ct2);
-    lfn += ".greml";
+    lfn += ".greml"; */
 
     /*
     
@@ -82,6 +82,7 @@ strftime(buff, 20, "%Y-%m-%d %H:%M:%S", localtime(&now));
     
     */
 
+/*
     char buff[20];
     time_t now = time(NULL);
     strftime(buff, 20, "%Y-%m-%d %H:%M:%S", localtime(&now));
@@ -96,6 +97,35 @@ strftime(buff, 20, "%Y-%m-%d %H:%M:%S", localtime(&now));
     return 0;
 
 }
+*/
+
+    // HexString 2bytearray:
+    // ref: https://stackoverflow.com/questions/17261798/converting-a-hex-string-to-a-byte-array
+    // ********************************************************
+    std::vector<char> HexToBytes(const std::string& hex) {
+        std::vector<char> bytes;
+
+        for (unsigned int i = 0; i < hex.length(); i += 2) {
+            std::string byteString = hex.substr(i, 2);
+            char byte = (char) strtol(byteString.c_str(), NULL, 16); // Actual onversion line
+            bytes.push_back(byte);
+        }
+
+        return bytes;
+    }
+
+
+    // Reference: https://stackoverflow.com/questions/72445322/is-there-a-way-to-directly-translate-cs-02x-format-to-c
+    #include <iostream>
+    #include <iomanip>
+
+    int main()
+    {
+        char c = 117;
+        std::cout << std::setfill('0') << std::setw(2) << std::hex << static_cast<int>(c) << std::endl; // Shows 0d
+        std::cout << std::hex << static_cast<int>(c) << std::endl;
+        return 0;
+    }
 
 
 
