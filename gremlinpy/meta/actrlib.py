@@ -225,7 +225,6 @@ class CliMessage:
 
 class CliRegACKMsg(CliMessage):
 
-
     def __init__(self, selector, sock, addr, request):
         super().__init__(selector, sock, addr, request)
     
@@ -236,7 +235,6 @@ class CliRegACKMsg(CliMessage):
         ra = regACK.fromdict(r)
         self.result = ra
     
-
 class CliReqManuscript(CliMessage):
     def __init__(self, selector, sock, addr, request):
         super().__init__(selector, sock, addr, request)
@@ -494,8 +492,8 @@ class RegisterMsg(SrvMessage) :
         # build reply:
         rACK = regACK(
             PseudoActor=regi.PseudoActor,
-            ManuHost=regi.Host,
-            ManuPort=regi.Port,
+            ManuHost="192.168.56.1",
+            ManuPort="41001",
             Registered=True
         )
 

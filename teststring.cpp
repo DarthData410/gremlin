@@ -114,7 +114,6 @@ strftime(buff, 20, "%Y-%m-%d %H:%M:%S", localtime(&now));
         return bytes;
     }
 
-
     // Reference: https://stackoverflow.com/questions/72445322/is-there-a-way-to-directly-translate-cs-02x-format-to-c
     #include <iostream>
     #include <iomanip>
@@ -126,9 +125,6 @@ strftime(buff, 20, "%Y-%m-%d %H:%M:%S", localtime(&now));
         std::cout << std::hex << static_cast<int>(c) << std::endl;
         return 0;
     }
-
-
-
 
 /*
 int main() {
