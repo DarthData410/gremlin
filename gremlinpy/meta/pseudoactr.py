@@ -87,7 +87,7 @@ class register:
 
     def start_connection(self,host, port, request):
         addr = (host, port)
-        print(f"Starting connection to {addr}")
+        #print(f"Starting connection to {addr}")
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setblocking(False)
         sock.connect_ex(addr)
@@ -154,12 +154,14 @@ class ReqActUpdate(register):
     _actup = None
     _status = None
     _upresult = None
+    _manuscriptID = None
 
-    def __init__(self, host, port, pa, now, aup, st, res) -> None:
+    def __init__(self, host, port, pa, now, aup, st, res, manuid) -> None:
         super().__init__(host, port, pa, now)
         self._actup = aup
         self._status = st
         self._upresult = res
+        self._manuscriptID = manuid
     def __get_message__(self, sock, addr, request):
         message = lib.CliReqActUpdate(self._sel, sock, addr, request)
         return message
@@ -170,7 +172,8 @@ class ReqActUpdate(register):
                 UpAct=self._actup,
                 UpNow=now,
                 Status=self._status,
-                UpMsg=self._upresult
+                UpMsg=self._upresult,
+                ManuscriptID=self._manuscriptID
             )
             
             req = lib.REQ.create(
@@ -190,6 +193,48 @@ class ReqActUpdate(register):
                 content=reg,
             )
 
+class ReqManuComplete(register):
+    """ update for when manuscript is completed. """
+    
+    _manuid = None
+    _status = None
+
+    def __init__(self, host, port, pa, now, manuid, st) -> None:
+        super().__init__(host, port, pa, now)
+        self._manuid = manuid
+        self._status = st
+        
+    def __get_message__(self, sock, addr, request):
+        message = lib.CliReqManuComplete(self._sel, sock, addr, request)
+        return message
+    
+    def register_request(self,pa,host,port,now):
+            
+            # build manuscript complete dc:
+            mc = lib.ManuscriptCompleted(
+                 ManuscriptID=self._manuid,
+                 Status=self._status,
+                 Now=lib.getnow()
+            )
+            
+            req = lib.REQ.create(
+                Pseudo=pa,
+                To=host,
+                ToPort=port,
+                Msg=mc.todict(),
+                Type=9
+            )
+
+            reg = dict()
+            reg["manuscriptcomplete_request"]=req.todict()
+
+            return dict(
+                type="text/json",
+                encoding="utf-8",
+                content=reg,
+            )
+
+
 # pseudo-actor:
 class PseudoActor:
     """ main class used to enable communcation between Pseudo-Actor <-> Actor. (Register,Manuscript,HeartBeat,ActUpdate) """
@@ -201,6 +246,16 @@ class PseudoActor:
     _registeredpa = '' # genuid() Pseudo-Actor id value
     _CliRegACKMsg = None
     _CliRegACK = None
+    _reportsrv = ''
+    _reportsrvport = 0
+    _CliReqManuscript = None
+    _manuscript = None
+    _CliReqHeartBeat = None
+    _heartbeat = None
+    _CliReqActUpdate = None
+    _actupdateACK = None
+    _CliReqManuComplete = None
+    _manucompleteACK = None
      
     def __init__(self,acthost:str,actport:int) -> None:
         self._host = acthost
@@ -218,8 +273,20 @@ class PseudoActor:
          return self._CliRegACKMsg
     def paCliRegACK(self) -> lib.regACK:
          return self._CliRegACK
+    def report_server(self) -> str:
+         return str(self._reportsrv)
+    def report_server_port(self) -> int:
+         return int(self._reportsrvport)
+    def manuscript(self) -> lib.manuscript:
+         return self._manuscript
+    def heartbeat(self) -> lib.ACK:
+         return self._heartbeat
+    def actupdateACK(self) -> lib.ACK:
+         return self._actupdateACK
+    def manucompleteACK(self) -> lib.ACK:
+         return self._manucompleteACK
     
-    def reg(self) -> str:
+    def registerpa(self):
         if not self._isregistered:
             self._registeredpa = lib.genuid()
             self._registeredat = lib.getnow()
@@ -232,6 +299,59 @@ class PseudoActor:
             r.execute()
             self._CliRegACKMsg = r.returnmsg()
             self._CliRegACK = self._CliRegACKMsg.result
-
+            self._reportsrv = self.paCliRegACK().ManuHost
+            self._reportsrvport = self.paCliRegACK().ManuPort
+            self._isregistered = self.paCliRegACK().Registered
+    
+    def request_manuscript(self):
+        r = ReqManuscript(
+            host=self.report_server(),
+            port=self.report_server_port(),
+            pa=self.paid(),
+            now=self.parat()
+        )
+        r.execute()
+        self._CliReqManuscript = r.returnmsg()
+        self._manuscript = self._CliReqManuscript.result
+    
+    def send_heartbeat(self):
+        r = ReqHeartBeat(
+            host=self.report_server(),
+            port=self.report_server_port(),
+            pa=self.paid(),
+            now=self.parat()
+        )
+        r.execute()
+        self._CliReqHeartBeat = r.returnmsg()
+        self._heartbeat = self._CliReqHeartBeat.result
+    
+    def update_act(self,actu):
+        r = ReqActUpdate(
+              host=self.report_server(),
+              port=self.report_server_port(),
+              pa=self.paid(),
+              now=lib.getnow(),
+              aup=actu,
+              st=1,
+              res="...finished...",
+              manuid=self.manuscript().ManuscriptID
+        )
+        
+        r.execute()
+        self._CliReqActUpdate = r.returnmsg()
+        self._actupdateACK = self._CliReqActUpdate.result
+    
+    def notify_manuscript_complete(self,status):
+         r = ReqManuComplete(
+              host=self.report_server(),
+              port=self.report_server_port(),
+              pa=self.paid(),
+              now=lib.getnow(),
+              manuid=self.manuscript().ManuscriptID,
+              st=status
+         )
+         r.execute()
+         self._CliReqManuComplete = r.returnmsg()
+         self._manucompleteACK = self._CliReqManuComplete.result
 
      

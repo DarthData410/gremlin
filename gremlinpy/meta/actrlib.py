@@ -64,7 +64,7 @@ class CliMessage:
 
     def _write(self):
         if self._send_buffer:
-            print(f"Sending {self._send_buffer!r} to {self.addr}")
+            #print(f"Sending {self._send_buffer!r} to {self.addr}")
             try:
                 # Should be ready to write
                 sent = self.sock.send(self._send_buffer)
@@ -102,11 +102,11 @@ class CliMessage:
     def _process_response_json_content(self):
         content = self.response
         result = content.get("result")
-        print(f"Got result: {result}")
+        #print(f"Got result: {result}")
 
     def _process_response_binary_content(self):
         content = self.response
-        print(f"Got response: {content!r}")
+        #print(f"Got response: {content!r}")
 
     def process_events(self, mask):
         if mask & selectors.EVENT_READ:
@@ -140,7 +140,7 @@ class CliMessage:
                 self._set_selector_events_mask("r")
 
     def close(self):
-        print(f"Closing connection to {self.addr}")
+       # print(f"Closing connection to {self.addr}")
         try:
             self.selector.unregister(self.sock)
         except Exception as e:
@@ -210,17 +210,9 @@ class CliMessage:
         if self.jsonheader["content-type"] == "text/json":
             encoding = self.jsonheader["content-encoding"]
             self.response = self._json_decode(data, encoding)
-            print(f"Received response {self.response!r} from {self.addr}")
+            #print(f"Received response {self.response!r} from {self.addr}")
             self._process_response_json_content()
-        else:
-            # Binary or unknown content-type
-            self.response = data
-            print(
-                f"Received {self.jsonheader['content-type']} "
-                f"response from {self.addr}"
-            )
-            self._process_response_binary_content()
-        # Close when response has been processed
+        
         self.close()
 
 class CliRegACKMsg(CliMessage):
@@ -242,16 +234,10 @@ class CliReqManuscript(CliMessage):
     def _process_response_json_content(self):
         content = self.response
         result = content.get("result")
-
         r = result 
-
-        print(f"Got result: {result}")
         manu = manuscript.fromdict(r)
         self.result = manu
-        print(manu.PseudoActor)
-        print(manu.ActorNow)
-        print(manu.NumOfActs)
-
+        
 class CliReqHeartBeat(CliMessage):
     def __init__(self, selector, sock, addr, request):
         super().__init__(selector, sock, addr, request)
@@ -259,10 +245,8 @@ class CliReqHeartBeat(CliMessage):
     def _process_response_json_content(self):
         content = self.response
         result = content.get("result")
-
         hback = ACK.fromdict(result)
         self.result = hback
-        print(hback)
 
 class CliReqActUpdate(CliMessage):
     def __init__(self, selector, sock, addr, request):
@@ -274,7 +258,17 @@ class CliReqActUpdate(CliMessage):
         print(Fore.GREEN+" *** RESPNOSE->ReportSrvr::CliReqActUpdate::ACK ***"+Fore.WHITE)
         hback = ACK.fromdict(result)
         self.result = hback
-        print(hback)
+
+class CliReqManuComplete(CliMessage):
+    def __init__(self, selector, sock, addr, request):
+        super().__init__(selector, sock, addr, request)
+    
+    def _process_response_json_content(self):
+        content = self.response
+        result = content.get("result")
+        print(Fore.GREEN+" *** RESPNOSE->ReportSrvr::CliReqManuComplete::ACK ***"+Fore.WHITE)
+        hback = ACK.fromdict(result)
+        self.result = hback
         
 # Server Message Operations:        
 class SrvMessage:
@@ -405,7 +399,7 @@ class SrvMessage:
         self._write()
 
     def close(self):
-        print(f"Closing connection to {self.addr}")
+        #print(f"Closing connection to {self.addr}")
         try:
             self.selector.unregister(self.sock)
         except Exception as e:
@@ -457,13 +451,7 @@ class SrvMessage:
             self.request = self._json_decode(data, encoding)
             print(Fore.BLUE+"...processing request from: "+Fore.GREEN+str(self.addr[0])+"@"+str(self.addr[1])+Fore.WHITE)
             #print(f"Received request {self.request!r} from {self.addr}")
-        else:
-            # Binary or unknown content-type
-            self.request = data
-            print(
-                f"Received {self.jsonheader['content-type']} "
-                f"request from {self.addr}"
-            )
+        
         # Set selector to listen for write events, we're done reading.
         self._set_selector_events_mask("w")
 
@@ -483,7 +471,6 @@ class RegisterMsg(SrvMessage) :
     def __init__(self, selector, sock, addr):
         super().__init__(selector, sock, addr) 
     
-    
     def _create_response_json_content(self):
         _reg = self.request.get("register")
         _regjs = json.dumps(_reg)
@@ -493,7 +480,7 @@ class RegisterMsg(SrvMessage) :
         rACK = regACK(
             PseudoActor=regi.PseudoActor,
             ManuHost="192.168.56.1",
-            ManuPort="41001",
+            ManuPort=41001,
             Registered=True
         )
 
@@ -513,6 +500,26 @@ class ReportSrvMsg(SrvMessage) :
     def __init__(self, selector, sock, addr):
         super().__init__(selector, sock, addr) 
     
+    def __manuscript_completed_response__(self): 
+        _req = self.request.get("manuscriptcomplete_request")
+        r = REQ.fromdict(_req)
+
+        mc = ManuscriptCompleted.fromdict(r.ReqMsg)
+        ra = ACK.fromreq(r)
+        ra.AckMsg=Fore.CYAN+"ManuscriptCompleted"+Fore.WHITE+" for manuscript: "+Fore.LIGHTBLUE_EX+"["+Fore.LIGHTCYAN_EX+mc.ManuscriptID+Fore.WHITE+"::"+Fore.LIGHTMAGENTA_EX+r.PseudoActor+Fore.WHITE+"@"+Fore.LIGHTGREEN_EX+mc.Now+Fore.LIGHTBLUE_EX+"]"+Fore.RESET
+        print(ra.AckMsg)
+
+        resultd = dict()
+        resultd["result"] = ra.todict()
+
+        encoding = "utf-8"
+        resp = {
+            "content_bytes": self._json_encode(resultd, encoding),
+            "content_type": "text/json",
+            "content_encoding": encoding,
+        }
+        return resp
+
     def __act_result_response__(self): 
         _req = self.request.get("actupdate_request")
         r = REQ.fromdict(_req)
@@ -539,7 +546,7 @@ class ReportSrvMsg(SrvMessage) :
     def __heartbeat_response__(self):
         _req = self.request.get("heartbeat_request")
         r = REQ.fromdict(_req)
-        print("...heartbeat: "+Fore.GREEN+r.PseudoActor)
+        print("...heartbeat: "+Fore.GREEN+r.PseudoActor+Fore.WHITE)
         ra = ACK.fromreq(r)
 
         resultd = dict()
@@ -570,6 +577,7 @@ class ReportSrvMsg(SrvMessage) :
         al.append(a)
 
         retManu = manuscript(
+            ManuscriptID=genuid(),
             PseudoActor=regi.PseudoActor,
             ReportingPort=regi.ReportPort,
             ActorNow=regi.RequestNow,
@@ -598,6 +606,8 @@ class ReportSrvMsg(SrvMessage) :
             return self.__manuscript_response__()
         elif self.request.__contains__("actupdate_request"):
             return self.__act_result_response__()
+        elif self.request.__contains__("manuscriptcomplete_request"):
+            return self.__manuscript_completed_response__()
         else:
             # generic ACK back to NVREQ = Non-Valid REQuest
             genACK = ACK(

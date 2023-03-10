@@ -11,6 +11,7 @@
 import json
 import dataclasses as dc
 
+MANUID="ManuscriptID"
 PSDACT="PseudoActor"
 REPHOST="ReportingHost"
 REPPORT="ReportingPort"
@@ -27,6 +28,7 @@ CHRONO="Chrono"
 
 @dc.dataclass
 class manuscript:
+    ManuscriptID: str
     PseudoActor: str
     ReportingPort: str
     ActorNow: str
@@ -44,6 +46,7 @@ class manuscript:
             ljoal.append(a)
         
         ret = manuscript(
+            ManuscriptID=ljo[MANUID],
             PseudoActor=ljo[PSDACT],
             ReportingPort=ljo[REPPORT],
             ActorNow=ljo[ACTNOW],
@@ -56,6 +59,7 @@ class manuscript:
     
     def tojson(self):
         d = dict()
+        d[MANUID] = self.ManuscriptID
         d[PSDACT] = self.PseudoActor
         d[REPPORT] = self.ReportingPort
         d[ACTNOW] = self.ActorNow
@@ -80,6 +84,7 @@ class manuscript:
             actsl.append(act.newfromdict(adict[str(dk)]))
 
         ret = manuscript(
+            ManuscriptID=d[MANUID],
             PseudoActor=d[PSDACT],
             ReportingPort=d[REPPORT],
             ActorNow=d[ACTNOW],
@@ -95,6 +100,7 @@ class manuscript:
         for ea in self.Acts:
             actsd[ea.Seq]=ea.todict()
 
+        ret[MANUID]=self.ManuscriptID
         ret[PSDACT]=self.PseudoActor
         ret[REPPORT]=self.ReportingPort
         ret[ACTNOW]=self.ActorNow
@@ -144,6 +150,7 @@ class act:
 
 @dc.dataclass
 class actUpdate:
+    ManuscriptID: str
     UpAct: act
     UpNow: str
     Status: int
@@ -151,6 +158,7 @@ class actUpdate:
 
     def fromdict(d):
         ret = actUpdate(
+            ManuscriptID=d[MANUID],
             UpAct=d["UpAct"],
             UpNow=d["UpNow"],
             Status=d["Status"],
@@ -159,6 +167,7 @@ class actUpdate:
         return ret
     def todict(a):
         ret = dict()
+        ret[MANUID]=a.ManuscriptID
         ret["UpAct"]=a.UpAct.todict()
         ret["UpNow"]=a.UpNow
         ret["Status"]=a.Status
@@ -195,5 +204,26 @@ class RequestManuscript:
             ReportHost=d[REPHOST],
             ReportPort=d[REPPORT],
             RequestNow=d[REQNOW]
+        )
+        return ret
+
+@dc.dataclass
+class ManuscriptCompleted:
+    ManuscriptID: str
+    Status: int
+    Now: str
+
+    def todict(self):
+        ret = dict()
+        ret[MANUID] = self.ManuscriptID
+        ret["Status"] = self.Status
+        ret["Now"] = self.Now
+        return ret
+    
+    def fromdict(d):
+        ret = ManuscriptCompleted(
+            ManuscriptID=d[MANUID],
+            Status=d["Status"],
+            Now=d["Now"]
         )
         return ret

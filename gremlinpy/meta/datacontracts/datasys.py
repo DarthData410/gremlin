@@ -8,7 +8,6 @@
 # | Apache License v2.0
 # |$>
 
-import json
 import dataclasses as dc
 import uuid
 import datetime
@@ -122,19 +121,3 @@ class DWN:
             ShutDown=ShutDown
         )
         return ret
-
-
-if __name__=="__main__":
-    
-    r = REQ.create("1001",10,"2001",20,"ALS",1)
-    print(r)
-    a = ACK.fromreq(r)
-    print(a)
-    d = DWN.create(a.HostFrom,r.HostFrom,120,True)
-    print(d)
-
-    """
-    REQ(ReqID='fb26d2bf-bdf9-11ed-a9c4-b94e40e120b5', HostFrom='1001', HostPort=10, ToHost='2001', ToPort=20, ReqMsg='ALS', Type=1, ReqNow='2023-03-08~15::41::27')
-    ACK(HostFrom='2001', HostPort=20, AckMsg='ACK', AckNow='2023-03-08~15::41::27', ReqID='fb26d2bf-bdf9-11ed-a9c4-b94e40e120b5')
-    DWN(DWNID='fb26d2c0-bdf9-11ed-a9c4-b94e40e120b5', DWNNOW='2023-03-08~15::41::27', Actor='2001', PseudoActor='1001', Chrono=120, ShutDown=True)
-    """
