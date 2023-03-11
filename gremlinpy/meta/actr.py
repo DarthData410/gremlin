@@ -32,7 +32,7 @@ class Registry:
         self.__init_selector__()
     
     def __message_out__(self):
-        print("\n [+] --->"+Fore.GREEN+" gremlin"+Fore.WHITE+" /meta - "+Fore.BLUE+"Registry"+Fore.WHITE+" ready @ "+Fore.BLUE+"{"+str(self._host)+","+str(self._port)+"}"+Fore.WHITE+"")
+        print("\n ["+Fore.YELLOW+"+"+Fore.RESET+"] --->"+Fore.GREEN+" gremlin"+Fore.RESET+" /meta - "+Fore.BLUE+"Registry"+Fore.RESET+" ready: "+Fore.CYAN+"{"+Fore.MAGENTA+str(self._host)+Fore.RESET+"@"+Fore.MAGENTA+str(self._port)+Fore.CYAN+"}"+Fore.RESET+"")
 
     def __init_listen__(self):
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -100,7 +100,7 @@ class ReportSrvr(Registry):
     def __init__(self, host, port) -> None:
         super().__init__(host, port)
     def __message_out__(self):
-        print("\n [+] --->"+Fore.GREEN+" gremlin"+Fore.WHITE+" /meta - "+Fore.BLUE+"ReportSrvr"+Fore.WHITE+" ready @ "+Fore.BLUE+"{"+str(self._host)+","+str(self._port)+"}"+Fore.WHITE+"")
+        print("\n ["+Fore.YELLOW+"+"+Fore.RESET+"] --->"+Fore.GREEN+" gremlin"+Fore.RESET+" /meta - "+Fore.LIGHTYELLOW_EX+"Report Server"+Fore.RESET+" ready: "+Fore.CYAN+"{"+Fore.MAGENTA+str(self._host)+Fore.RESET+"@"+Fore.MAGENTA+str(self._port)+Fore.CYAN+"}"+Fore.RESET+"")
     def __print_except__(self,addr):
         print(
             f""+Fore.GREEN+"gremlin"+Fore.WHITE+" /meta "+Fore.RED+"ReportSrvr fault"+Fore.WHITE+": "+addr+":\n"

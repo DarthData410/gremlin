@@ -506,7 +506,7 @@ class ReportSrvMsg(SrvMessage) :
 
         mc = ManuscriptCompleted.fromdict(r.ReqMsg)
         ra = ACK.fromreq(r)
-        ra.AckMsg=Fore.CYAN+"ManuscriptCompleted"+Fore.WHITE+" for manuscript: "+Fore.LIGHTBLUE_EX+"["+Fore.LIGHTCYAN_EX+mc.ManuscriptID+Fore.WHITE+"::"+Fore.LIGHTMAGENTA_EX+r.PseudoActor+Fore.WHITE+"@"+Fore.LIGHTGREEN_EX+mc.Now+Fore.LIGHTBLUE_EX+"]"+Fore.RESET
+        ra.AckMsg="ACK::"+Fore.CYAN+"ManuscriptCompleted"+Fore.WHITE+"::"+Fore.LIGHTBLUE_EX+"["+Fore.LIGHTCYAN_EX+mc.ManuscriptID+Fore.WHITE+"::"+Fore.LIGHTMAGENTA_EX+r.PseudoActor+Fore.WHITE+"@"+Fore.LIGHTGREEN_EX+mc.Now+Fore.LIGHTBLUE_EX+"]"+Fore.RESET
         print(ra.AckMsg)
 
         resultd = dict()
@@ -524,13 +524,11 @@ class ReportSrvMsg(SrvMessage) :
         _req = self.request.get("actupdate_request")
         r = REQ.fromdict(_req)
     
-        print(Fore.BLUE+"*** ARR::REQ::"+r.ReqID+" ***:"+Fore.WHITE)
         au = actUpdate.fromdict(r.ReqMsg)
-        print(Fore.YELLOW+"*** ARR::REQ::AU::PA::"+r.PseudoActor+" ***:"+Fore.WHITE)
         a = act.fromdict(au.UpAct)
-        print(Fore.GREEN+"*** ARR::REQ::AU::A::"+a.Seq+" ***:"+Fore.WHITE)
         ra = ACK.fromreq(r)
-        ra.AckMsg = "ACK::"+a.Seq+"::"+a.Command # TODO move to a build out from act
+
+        ra.AckMsg = "ACK::"+Fore.CYAN+"ActUpdate"+Fore.LIGHTBLUE_EX+"["+Fore.LIGHTCYAN_EX+a.Seq+Fore.WHITE+"::"+Fore.LIGHTMAGENTA_EX+a.Command+Fore.LIGHTBLUE_EX+"]"+Fore.RESET
 
         resultd = dict()
         resultd["result"] = ra.todict()
@@ -550,6 +548,7 @@ class ReportSrvMsg(SrvMessage) :
         ra = ACK.fromreq(r)
 
         resultd = dict()
+        ra.AckMsg = "ACK::"+Fore.CYAN+"HeartBeat"+Fore.LIGHTBLUE_EX+"["+Fore.LIGHTCYAN_EX+r.ReqID+Fore.WHITE+"::"+Fore.LIGHTMAGENTA_EX+r.PseudoActor+Fore.LIGHTBLUE_EX+"]"+Fore.RESET
         resultd["result"] = ra.todict()
 
         encoding = "utf-8"
