@@ -70,9 +70,13 @@ public:
         
 };
 
-class modmeta:public mb{
+class metamod:public mb{
+private:
+    bool _is_loaded = false;
+    string _info;
 
 public:
-    modmeta();
+    metamod();
     Command process(Command _process);
+    
 };

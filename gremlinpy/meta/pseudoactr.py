@@ -269,6 +269,8 @@ class PseudoActor:
          return self._registeredpa
     def parat(self) -> str:
          return self._registeredat
+    def isregistered(self) -> bool:
+         return self._isregistered
     def paCliRegACKMsg(self) -> CliRegACKMsg:
          return self._CliRegACKMsg
     def paCliRegACK(self) -> regACK:
@@ -277,17 +279,31 @@ class PseudoActor:
          return str(self._reportsrv)
     def report_server_port(self) -> int:
          return int(self._reportsrvport)
+    
+    # manuscript section: -------------------------
     def manuscript(self) -> manuscript:
          return self._manuscript
     def manuscriptID(self) -> str:
-         return self._manuscript.ManuscriptID
+         return self.manuscript().ManuscriptID
+    def manuscript_NumOfActs(self) -> int:
+         return self.manuscript().NumOfActs
+    def manuact_seq(self,idx) -> str:
+         return self.manuscript().Acts[idx].Seq
+    def manuact_command(self,idx) -> str:
+         return self.manuscript().Acts[idx].Command
+    def manuact_args(self,idx) -> str:
+         return self.manuscript().Acts[idx].Args 
+    # end manuscript section -----------------------
+    
+    # ACK section: ---------------------------------
     def heartbeat(self) -> ACK:
          return self._heartbeat
     def actupdateACK(self) -> ACK:
          return self._actupdateACK
     def manucompleteACK(self) -> ACK:
          return self._manucompleteACK
-    
+    # end ACK section: -----------------------------
+
     def registerpa(self):
         if not self._isregistered:
             self._registeredpa = genuid()
@@ -356,7 +372,5 @@ class PseudoActor:
          self._CliReqManuComplete = r.returnmsg()
          self._manucompleteACK = self._CliReqManuComplete.result
     
-    def testcpp(i,x) -> int:
-         return int(i*x)
 
      

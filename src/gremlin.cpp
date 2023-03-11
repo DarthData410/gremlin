@@ -96,7 +96,7 @@ string gremlin::process(string _run) {
     _modprompt =  fm.greentxt()+_mdp+fm.none();
 
     ret += "\n";
-
+    
     return ret;
 }
     

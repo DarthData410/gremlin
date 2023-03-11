@@ -13,6 +13,7 @@ public:
     bool isun(string _r);
     bool ishelp(string _r);
     bool isload(string _r);
+    bool isinfo(string _r);
     Command getcmd(string _r,char args[MAX_ARGS]);
     Command cmd();
     Module getmod(string _r);

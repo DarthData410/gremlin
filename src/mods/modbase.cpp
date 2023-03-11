@@ -25,23 +25,25 @@ void modloader::setmod(Module _m) {
 Command modloader::process(Command _process) {
     Command ret = Command();
     modank a = modank();
-    modmeta m = modmeta();
+    metamod m = metamod();
     
     switch(_loaded_mod.value) {
         case MLC_ANK :
             ret = a.process(_process);
+            return ret;
             break;
         case MLC_META :
             ret = m.process(_process);
+            return ret;
+            break;
         default :
             ret.args[0]=CNULL;
             ret.args[3]=CNULL;
             ret.msg = "";
+            return ret;
             break;
     }
 
-    modloader::logit(ret.msg,ret);
-    
     return ret;
 }
 string modloader::logfile() {
@@ -251,23 +253,29 @@ void modank::run_lil_prog(string &msg,string &msgout) {
 	    std::this_thread::sleep_until(tp);
     }
 
-}
+};
 
-// modmeta section:
-modmeta::modmeta() {
+metamod::metamod() {
+    _info = "";
+};
 
-}
-
-Command modmeta::process(Command _process) {
+Command metamod::process(Command _process) {
     format f = format();
     Command ret = Command();
     ret._base = _process._base;
 
     ret.msg = "\n";
     if(_process.value==CRUN){
-        meta m = meta();
-        m.testpy();
-        ret.msg += "\n ... meta.testpy() executed ...";
+        meta m = meta("192.168.56.1",41011);
+        m.execute_as_psa();
+        _info = m.get_info();
+        ret.msg += _info;
+        _is_loaded = true;
+        
+    }
+    //else if(_process.value==CINFO && _is_loaded) {
+    else if(_process._base.find('i',0)==0|| _process._base.find('I',0)==0) {
+        ret.msg += _info;
     }
 
     return ret;

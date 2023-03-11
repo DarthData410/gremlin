@@ -15,6 +15,7 @@
 #define CPARMS 'p'
 #define CANCHOR '~'
 #define CPS '-'
+#define CINFO 'i'
 
 // ModLoadChars:
 #define MLC_BASE '*'

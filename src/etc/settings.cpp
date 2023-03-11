@@ -40,6 +40,15 @@ bool settings::isload(string _r) {
 
     return ret;
 }
+bool settings::isinfo(string _r) {
+    bool ret = false;
+
+    if(getcmd(_r,nullargs).value==CINFO) {
+        ret = true;
+    }
+
+    return ret;
+}
 Command settings::getcmd(string _r,char args[]) {
     //char ret = CNULL;
     Command ret = Command();
@@ -56,6 +65,9 @@ Command settings::getcmd(string _r,char args[]) {
     else if(ret._base.find('?',0)==0 || ret._base=="Help" || ret._base=="HELP") {
         ret.value = CHELP;
         // need to check for loaded mod, and load its help...
+    }
+    else if(ret._base.find('i',0)==0 || ret._base.find('I',0)==0) {
+        ret.value = CINFO;
     }
     else if(ret._base.find(CLOAD,0)==0) {
         ret.value = CLOAD;

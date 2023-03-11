@@ -1,7 +1,103 @@
 #include "meta.hpp"
 
-meta::meta() {
+PseudoActor::PseudoActor() {
 
+}
+
+PyObject *PseudoActor::regsrv_tuple() {
+    PyObject *ret = PyTuple_New(2);
+    ret  = Py_BuildValue("(si)",_regsrvr.host.c_str(),_regsrvr.port);
+    return ret;
+}
+
+PyObject *PseudoActor::empty_tuple() {
+    PyObject *ret = PyTuple_New(0);
+    return ret;
+}
+
+PyObject *PseudoActor::psa_pyclass(PyObject *pmod) {
+    PyObject *ret = PyObject_GetAttrString(pmod, PSA);
+    return ret;
+}
+
+PyObject *PseudoActor::psa_inst(PyObject *pclass,PyObject *pargs) {
+    PyObject *ret = PyEval_CallObject(pclass, pargs);
+    return ret;
+}
+
+PyObject *PseudoActor::pfbase(PyObject *psainst,const char *_type) {
+    PyObject *et = empty_tuple();
+    PyObject *func = PyObject_GetAttrString(psainst, _type);
+    PyObject *ret = PyObject_CallObject(func,et);
+    Py_DECREF(et);
+    Py_DECREF(func);
+    return ret;
+}
+void PseudoActor::pf_registerpa(PyObject *psainst) {
+    PyObject *ret = pfbase(psainst,pfREGPA);
+    Py_DECREF(ret);
+}
+void PseudoActor::pf_report_server(PyObject *psainst) {
+    PyObject *ret = pfbase(psainst,pfREPSRV);
+    char *_res;
+    PyArg_Parse(ret,"s",&_res);
+    _repsrvr.host = _res;
+    Py_DECREF(ret);
+}
+void PseudoActor::pf_report_server_port(PyObject *psainst) {
+    PyObject *ret = pfbase(psainst,pfREPSRVPRT);
+    int _res;
+    PyArg_Parse(ret,"i",&_res);
+    _repsrvr.port = _res;
+    Py_DECREF(ret);
+}
+
+meta::meta(string _rsrvr,int _rsrvrport) {
+    _psa = PseudoActor();
+    _psa._regsrvr = RegistryServer();
+    _psa._regsrvr.host = _rsrvr;
+    _psa._regsrvr.port = _rsrvrport;
+}
+
+void meta::execute_as_psa() {
+    PyObject *pName,*pModule,*pcPSA,*piPSA;
+    PyObject *piPSAargs;
+
+    Py_Initialize();
+    pName = PyUnicode_DecodeFSDefault(GREMPY);
+    pModule = PyImport_Import(pName);
+
+    if(pModule != NULL) {
+        pcPSA = _psa.psa_pyclass(pModule);
+        piPSAargs = _psa.regsrv_tuple();
+        piPSA = _psa.psa_inst(pcPSA,piPSAargs);
+        // register and set report server variables:
+        _psa.pf_registerpa(piPSA);
+        _psa.pf_report_server(piPSA);
+        _psa.pf_report_server_port(piPSA);
+
+        //printf("\n Report Server: %s",_psa._repsrvr.host.c_str());
+        //printf("\n Report Server Port: %i",_psa._repsrvr.port);
+    }
+    else {
+        PyErr_Print();
+        fprintf(stderr, "Failed to load /meta.py \n");
+    }
+
+}
+string meta::get_info() {
+    string ret = "\n";
+    ret += "   +---{/meta->info}\n";
+    ret += "   |\n";
+    ret += "  [+]--Report Server-> ";
+    ret += _psa._repsrvr.host;
+    ret += "\n";
+    ret += "  [+]--Report Server Port-> ";
+    ret += to_string(_psa._repsrvr.port);
+    ret += "\n";
+    ret += "   |\n";
+    ret += "   ^\n";
+    return ret;
 }
 
 int meta::testpy()
