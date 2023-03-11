@@ -2,7 +2,7 @@
 
 import sys
 import os
-import actr as actr
+from gremlinpy.meta.actr import *
 
 
 if __name__=="__main__":
@@ -12,7 +12,7 @@ if __name__=="__main__":
     _p = int(sys.argv[2])
     os.system("clear")
     
-    rsrv = actr.ReportSrvr(_h,_p)
+    rsrv = ReportSrvr(_h,_p)
     try:
         
         while True:

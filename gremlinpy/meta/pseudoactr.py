@@ -279,6 +279,8 @@ class PseudoActor:
          return int(self._reportsrvport)
     def manuscript(self) -> manuscript:
          return self._manuscript
+    def manuscriptID(self) -> str:
+         return self._manuscript.ManuscriptID
     def heartbeat(self) -> ACK:
          return self._heartbeat
     def actupdateACK(self) -> ACK:

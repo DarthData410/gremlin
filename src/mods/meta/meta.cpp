@@ -7,9 +7,11 @@ meta::meta() {
 int meta::testpy()
 {
     PyObject *pName, *pModule, *pClass, *pClassName, *pPSTup, *pEmptyTup, *pFunc, *pFunc2, *pFunc3, *pClassInt;
+    PyObject *pFReqManu, *pManuOBJ, *pFManuObjID;
     PyObject *pArgs, *pValue, *pValue2, *pResult, *pRptSrvr, *pRptSrvPort;
+    PyObject *pRReqManuID;
     string arg1="192.168.56.1";
-    char *cstr;
+    char *cstr,*manuID;
     int rptPort;
     int i,arg2=41011;
 
@@ -48,9 +50,16 @@ int meta::testpy()
         pFunc3 = PyObject_GetAttrString(pClassInt, "report_server_port");
         pRptSrvPort = PyObject_CallObject(pFunc3,pEmptyTup);
         PyArg_Parse(pRptSrvPort,"i",&rptPort);
+
+        pFReqManu = PyObject_GetAttrString(pClassInt, "request_manuscript");
+        pManuOBJ = PyObject_CallObject(pFReqManu,pEmptyTup);
+        pFManuObjID = PyObject_GetAttrString(pClassInt, "manuscriptID");
+        pRReqManuID = PyObject_CallObject(pFManuObjID,pEmptyTup);
+        PyArg_Parse(pRReqManuID,"s",&manuID);
         
         printf("\n %s",cstr);
         printf("\n %i",rptPort);
+        printf("\n %s",manuID);
         printf("\n executed CPP->PY");
 
         Py_DECREF(pResult);
