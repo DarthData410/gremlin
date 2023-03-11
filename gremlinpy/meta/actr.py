@@ -14,7 +14,7 @@ from colorama import Fore
 import traceback
 import selectors
 import socket
-import actrlib as lib
+from .actrlib import *
 
 # registry server:
 class Registry:
@@ -84,7 +84,7 @@ class Registry:
         self.__print_closeout_msg__()
     
     def __message__(self,conn, addr):
-        msg = lib.RegisterMsg(self._sel, conn, addr)
+        msg = RegisterMsg(self._sel, conn, addr)
         return msg
 
     def __accept_wrapper__(self,sock):
@@ -111,5 +111,5 @@ class ReportSrvr(Registry):
         self._msgback = self._msgback + Fore.GREEN + " gremlin " + Fore.WHITE
         self._msgback = self._msgback + "/meta "+Fore.BLUE+"ReportSrvr"+Fore.WHITE+" closed"
     def __message__(self,conn, addr):
-        msg = lib.ReportSrvMsg(self._sel, conn, addr)
+        msg = ReportSrvMsg(self._sel, conn, addr)
         return msg

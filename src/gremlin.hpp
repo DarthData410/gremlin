@@ -10,7 +10,7 @@ private:
     bool _iserror = false;
     string _title = "*nix security framework";
     string _appname = "gremlin";
-    string _ver = "v1.0 (feb23)";
+    string _ver = "v1.1 (mar23)";
     string _by = "PyFryLabs -> @pyfryday";
     string _prompt = "$";
     string _promptend = ">";

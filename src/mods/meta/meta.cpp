@@ -11,7 +11,8 @@ int meta::testpy()
     int i;
 
     Py_Initialize();
-    pName = PyUnicode_DecodeFSDefault("gremlinpy.pseudoactr.PseudoActor");
+    //pName = PyUnicode_DecodeFSDefault("gremlinpy.pseudoactr.PseudoActor");
+    pName = PyUnicode_DecodeFSDefault("gremlinpy.tester");
     /* Error checking of pName left out */
 
     pModule = PyImport_Import(pName);

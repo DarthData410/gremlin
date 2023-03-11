@@ -13,7 +13,7 @@ from colorama import Fore
 import socket
 import selectors
 import traceback
-import actrlib as lib
+from .actrlib import *
 
 # register messages::
 class register: 
@@ -65,7 +65,7 @@ class register:
 
     def register_request(self,pa,host,port,now):
             
-            ri = lib.reginfo (
+            ri = reginfo (
                 PseudoActor=pa,
                 RegisterNow=now,
                 Host=host,
@@ -82,7 +82,7 @@ class register:
         
     def __get_message__(self,sock,addr,request):
         """ message = actrlib.<Message Type>(CliMessage): subclass """
-        message = lib.CliRegACKMsg(self._sel, sock, addr, request)
+        message = CliRegACKMsg(self._sel, sock, addr, request)
         return message
 
     def start_connection(self,host, port, request):
@@ -101,11 +101,11 @@ class ReqManuscript(register):
     def __init__(self, host, port, pa, now) -> None:
         super().__init__(host, port, pa, now)
     def __get_message__(self, sock, addr, request):
-        message = lib.CliReqManuscript(self._sel, sock, addr, request)
+        message = CliReqManuscript(self._sel, sock, addr, request)
         return message
     def register_request(self,pa,host,port,now):
             
-            mu = lib.RequestManuscript(
+            mu = RequestManuscript(
                 PseudoActor=pa,
                 ReportHost=host,
                 ReportPort=port,
@@ -126,11 +126,11 @@ class ReqHeartBeat(register):
     def __init__(self, host, port, pa, now) -> None:
         super().__init__(host, port, pa, now)
     def __get_message__(self, sock, addr, request):
-        message = lib.CliReqHeartBeat(self._sel, sock, addr, request)
+        message = CliReqHeartBeat(self._sel, sock, addr, request)
         return message
     def register_request(self,pa,host,port,now):
             
-            req = lib.REQ.create(
+            req = REQ.create(
                 Pseudo=pa,
                 To=host,
                 ToPort=port,
@@ -163,12 +163,12 @@ class ReqActUpdate(register):
         self._upresult = res
         self._manuscriptID = manuid
     def __get_message__(self, sock, addr, request):
-        message = lib.CliReqActUpdate(self._sel, sock, addr, request)
+        message = CliReqActUpdate(self._sel, sock, addr, request)
         return message
     def register_request(self,pa,host,port,now):
             
             # build act update from aup, st, res passed on instance init:
-            au = lib.actUpdate(
+            au = actUpdate(
                 UpAct=self._actup,
                 UpNow=now,
                 Status=self._status,
@@ -176,7 +176,7 @@ class ReqActUpdate(register):
                 ManuscriptID=self._manuscriptID
             )
             
-            req = lib.REQ.create(
+            req = REQ.create(
                 Pseudo=pa,
                 To=host,
                 ToPort=port,
@@ -205,19 +205,19 @@ class ReqManuComplete(register):
         self._status = st
         
     def __get_message__(self, sock, addr, request):
-        message = lib.CliReqManuComplete(self._sel, sock, addr, request)
+        message = CliReqManuComplete(self._sel, sock, addr, request)
         return message
     
     def register_request(self,pa,host,port,now):
             
             # build manuscript complete dc:
-            mc = lib.ManuscriptCompleted(
+            mc = ManuscriptCompleted(
                  ManuscriptID=self._manuid,
                  Status=self._status,
-                 Now=lib.getnow()
+                 Now=getnow()
             )
             
-            req = lib.REQ.create(
+            req = REQ.create(
                 Pseudo=pa,
                 To=host,
                 ToPort=port,
@@ -269,27 +269,27 @@ class PseudoActor:
          return self._registeredpa
     def parat(self) -> str:
          return self._registeredat
-    def paCliRegACKMsg(self) -> lib.CliRegACKMsg:
+    def paCliRegACKMsg(self) -> CliRegACKMsg:
          return self._CliRegACKMsg
-    def paCliRegACK(self) -> lib.regACK:
+    def paCliRegACK(self) -> regACK:
          return self._CliRegACK
     def report_server(self) -> str:
          return str(self._reportsrv)
     def report_server_port(self) -> int:
          return int(self._reportsrvport)
-    def manuscript(self) -> lib.manuscript:
+    def manuscript(self) -> manuscript:
          return self._manuscript
-    def heartbeat(self) -> lib.ACK:
+    def heartbeat(self) -> ACK:
          return self._heartbeat
-    def actupdateACK(self) -> lib.ACK:
+    def actupdateACK(self) -> ACK:
          return self._actupdateACK
-    def manucompleteACK(self) -> lib.ACK:
+    def manucompleteACK(self) -> ACK:
          return self._manucompleteACK
     
     def registerpa(self):
         if not self._isregistered:
-            self._registeredpa = lib.genuid()
-            self._registeredat = lib.getnow()
+            self._registeredpa = genuid()
+            self._registeredat = getnow()
             r = register(
                  host=self._host,
                  port=self._port,
@@ -330,7 +330,7 @@ class PseudoActor:
               host=self.report_server(),
               port=self.report_server_port(),
               pa=self.paid(),
-              now=lib.getnow(),
+              now=getnow(),
               aup=actu,
               st=1,
               res="...finished...",
@@ -346,7 +346,7 @@ class PseudoActor:
               host=self.report_server(),
               port=self.report_server_port(),
               pa=self.paid(),
-              now=lib.getnow(),
+              now=getnow(),
               manuid=self.manuscript().ManuscriptID,
               st=status
          )

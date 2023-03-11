@@ -16,9 +16,10 @@ import io
 import json
 from colorama import Fore
 # /meta JSON/data contracts:
-from datacontracts.register import *
-from datacontracts.manuscript import *
-from datacontracts.datasys import *
+from .datacontracts.register import *
+#from datacontracts.register import *
+from .datacontracts.manuscript import *
+from .datacontracts.datasys import *
 
 # Client Message Operations:
 class CliMessage:
