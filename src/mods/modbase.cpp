@@ -25,11 +25,14 @@ void modloader::setmod(Module _m) {
 Command modloader::process(Command _process) {
     Command ret = Command();
     modank a = modank();
+    modmeta m = modmeta();
     
     switch(_loaded_mod.value) {
         case MLC_ANK :
             ret = a.process(_process);
             break;
+        case MLC_META :
+            ret = m.process(_process);
         default :
             ret.args[0]=CNULL;
             ret.args[3]=CNULL;
@@ -250,4 +253,22 @@ void modank::run_lil_prog(string &msg,string &msgout) {
 
 }
 
+// modmeta section:
+modmeta::modmeta() {
 
+}
+
+Command modmeta::process(Command _process) {
+    format f = format();
+    Command ret = Command();
+    ret._base = _process._base;
+
+    ret.msg = "\n";
+    if(_process.value==CRUN){
+        meta m = meta();
+        m.testpy();
+        ret.msg += "\n ... meta.testpy() executed ...";
+    }
+
+    return ret;
+}

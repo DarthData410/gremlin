@@ -353,5 +353,8 @@ class PseudoActor:
          r.execute()
          self._CliReqManuComplete = r.returnmsg()
          self._manucompleteACK = self._CliReqManuComplete.result
+    
+    def testcpp(i,x) -> int:
+         return int(i*x)
 
      

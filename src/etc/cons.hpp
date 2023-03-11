@@ -18,15 +18,17 @@
 
 // ModLoadChars:
 #define MLC_BASE '*'
-#define MLC_ANK '1'
+#define MLC_ANK '1' // /ank
+#define MLC_META '2' // /meta
 #define GREML "./greml/"
 
 // Mod Args:
 #define MAX_ARGS 4
 #define MAX_PARM 4
 
-// Ank:
 #define MOD_ANK "ank"
+#define MOD_META "meta"
+
 
 using namespace std;
 

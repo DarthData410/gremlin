@@ -104,7 +104,8 @@ Module settings::getmod(string _r) {
     Module ret = Module();
     ret._base = _r;
     
-    if(ret._base=="ank~;"||ret._base=="/ank~;"||ret._base=="ANK~;"||ret._base=="/ANK~;") { ret.value=MLC_ANK; ret.name="ank"; ret.title="a network sniffer"; ret.prompt="/ank"; }
+    if(ret._base=="ank~;"||ret._base=="/ank~;"||ret._base=="ANK~;"||ret._base=="/ANK~;") { ret.value=MLC_ANK; ret.name=MOD_ANK; ret.title="a network sniffer"; ret.prompt="/ank"; }
+    else if(ret._base=="meta~;"||ret._base=="/meta~;"||ret._base=="META~;"||ret._base=="/META~;") { ret.value=MLC_META; ret.name=MOD_META; ret.title="pentest ManagEmenT And execution engine"; ret.prompt="/meta"; }
     else {
         ret.value=MLC_BASE; ret.name=""; ret.title=""; ret.prompt="";
     }

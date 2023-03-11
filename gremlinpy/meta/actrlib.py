@@ -3,6 +3,7 @@
 # | -------                                                                             |
 # | actrlib.py is a python module for the gremlin app /meta mod that enables tcp net    |
 # | communication for the actors & pseudo-actors that are parent/child instances.       |
+# | This module is the core of tcp communications for /meta.                            |
 # | (part of /meta)                                                                     |
 # +-------------------------------------------------------------------------------------+
 # | Apache License v2.0
@@ -255,7 +256,6 @@ class CliReqActUpdate(CliMessage):
     def _process_response_json_content(self):
         content = self.response
         result = content.get("result")
-        print(Fore.GREEN+" *** RESPNOSE->ReportSrvr::CliReqActUpdate::ACK ***"+Fore.WHITE)
         hback = ACK.fromdict(result)
         self.result = hback
 
@@ -266,7 +266,6 @@ class CliReqManuComplete(CliMessage):
     def _process_response_json_content(self):
         content = self.response
         result = content.get("result")
-        print(Fore.GREEN+" *** RESPNOSE->ReportSrvr::CliReqManuComplete::ACK ***"+Fore.WHITE)
         hback = ACK.fromdict(result)
         self.result = hback
         
@@ -506,7 +505,7 @@ class ReportSrvMsg(SrvMessage) :
 
         mc = ManuscriptCompleted.fromdict(r.ReqMsg)
         ra = ACK.fromreq(r)
-        ra.AckMsg="ACK::"+Fore.CYAN+"ManuscriptCompleted"+Fore.WHITE+"::"+Fore.LIGHTBLUE_EX+"["+Fore.LIGHTCYAN_EX+mc.ManuscriptID+Fore.WHITE+"::"+Fore.LIGHTMAGENTA_EX+r.PseudoActor+Fore.WHITE+"@"+Fore.LIGHTGREEN_EX+mc.Now+Fore.LIGHTBLUE_EX+"]"+Fore.RESET
+        ra.AckMsg="ACK::"+Fore.CYAN+"ManuscriptCompleted"+Fore.LIGHTBLUE_EX+"["+Fore.LIGHTCYAN_EX+mc.ManuscriptID+Fore.WHITE+"::"+Fore.LIGHTMAGENTA_EX+r.PseudoActor+Fore.WHITE+"@"+Fore.LIGHTGREEN_EX+mc.Now+Fore.LIGHTBLUE_EX+"]"+Fore.RESET
         print(ra.AckMsg)
 
         resultd = dict()
@@ -529,6 +528,7 @@ class ReportSrvMsg(SrvMessage) :
         ra = ACK.fromreq(r)
 
         ra.AckMsg = "ACK::"+Fore.CYAN+"ActUpdate"+Fore.LIGHTBLUE_EX+"["+Fore.LIGHTCYAN_EX+a.Seq+Fore.WHITE+"::"+Fore.LIGHTMAGENTA_EX+a.Command+Fore.LIGHTBLUE_EX+"]"+Fore.RESET
+        print(ra.AckMsg)
 
         resultd = dict()
         resultd["result"] = ra.todict()
@@ -544,11 +544,11 @@ class ReportSrvMsg(SrvMessage) :
     def __heartbeat_response__(self):
         _req = self.request.get("heartbeat_request")
         r = REQ.fromdict(_req)
-        print("...heartbeat: "+Fore.GREEN+r.PseudoActor+Fore.WHITE)
         ra = ACK.fromreq(r)
 
         resultd = dict()
         ra.AckMsg = "ACK::"+Fore.CYAN+"HeartBeat"+Fore.LIGHTBLUE_EX+"["+Fore.LIGHTCYAN_EX+r.ReqID+Fore.WHITE+"::"+Fore.LIGHTMAGENTA_EX+r.PseudoActor+Fore.LIGHTBLUE_EX+"]"+Fore.RESET
+        print(ra.AckMsg)
         resultd["result"] = ra.todict()
 
         encoding = "utf-8"

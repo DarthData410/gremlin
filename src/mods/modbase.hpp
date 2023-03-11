@@ -14,6 +14,7 @@
 #include "../../src/etc/format.hpp"
 #include "../../src/etc/settings.hpp"
 #include "ank/ank.hpp"
+#include "meta/meta.hpp"
 
 using namespace std;
 
@@ -67,4 +68,11 @@ public:
     modank();
     Command process(Command _process);
         
+};
+
+class modmeta:public mb{
+
+public:
+    modmeta();
+    Command process(Command _process);
 };
