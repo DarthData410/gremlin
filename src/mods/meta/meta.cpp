@@ -148,10 +148,68 @@ act PseudoActor::pf_getact(PyObject *psainst,int idx) {
     return ret;
 }
 
+void PseudoActor::run_prog(string &msg,string &msgout) {
+    
+    string _px = "";
+    string _out = "";
+    int i = 0;
+    
+    while(msg!="^qq") {
+        if(i>14) { i=0; }
+        system("clear");
+        _out = "";
+
+        _px = "[";
+        switch(i) {
+            case 0 : _px += "*----"; break;
+            case 1 : _px += "-*---"; break;
+            case 2 : _px += "--*--"; break;
+            case 3 : _px += "---*-"; break;
+            case 4 : _px += "----*"; break;
+            case 5 : _px += "*---*"; break;
+            case 6 : _px += "-*-*-"; break;
+            case 7 : _px += "--*--"; break;
+            case 8 : _px += "---*-"; break;
+            case 9 : _px += "----*"; break;
+            case 10 : _px += "---*-"; break;
+            case 11 : _px += "--*--"; break;
+            case 12 : _px += "-*---"; break;
+            case 13 : _px += "*----"; break;
+            case 14 : _px += "-----"; break;
+            default: _px += "*"; break;
+        }
+        _px += "]";
+
+        _out += "\n";
+        _out += "  gremlin - /meta - executing acts\n";
+        _out += "  |\n";
+        _out += "  |-->"+_px+"\n";
+        _out += "  +\n";
+        
+        if(msgout!="") {
+            _out += "  |->"+msgout+"\n";
+        }
+        
+        cout << _out;
+        i++;
+        std::chrono::steady_clock::time_point tp = std::chrono::steady_clock::now() + std::chrono::milliseconds(800);
+	    std::this_thread::sleep_until(tp);
+    }
+    system("clear");
+
+};
+
 bool PseudoActor::process_manuscript(PyObject *psainst) {
     bool ret = false;
+
+    string tmsg = "^";
+    string tmsgo = "";
+    thread ptx(run_prog,ref(tmsg),ref(tmsgo));
+    &tmsgo.append(" ACTS DETAILS: \n");
+
     for(int i=0;i<_acts.size();i++) {
         Act a = _acts[i];
+        &tmsgo.append("  |-->[ACT->"+a.Seq+"::"+a.Command+" in "+to_string(a.Chrono)+" seconds]\n");
         //printf("<...starting /meta->manuscript->acts->%s::%s in %i seconds...> \n",a.Seq.c_str(),a.Command.c_str(),a.Chrono);
         chrono::steady_clock::time_point tp = chrono::steady_clock::now() + chrono::seconds(a.Chrono);
 	    this_thread::sleep_until(tp);
@@ -173,7 +231,11 @@ bool PseudoActor::process_manuscript(PyObject *psainst) {
         ar.Result = pys(ermsg);
         Py_DECREF(ermsg);
         _actresults.push_back(ar);
+        &tmsgo.append("  |-->[ACT->"+a.Seq+"::"+a.Command+" Completed]\n");
     }
+    &tmsg.append("qq");
+    ptx.join();
+
     return ret;
 }
 

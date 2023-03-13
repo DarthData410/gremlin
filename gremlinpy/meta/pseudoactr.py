@@ -419,6 +419,16 @@ class PseudoActor:
     
     def executeactmsg(self) -> str:
         return self._executeCERMSG
+    
+    def getactidxbyseq(self,seq) -> int:
+        _acts = self.manuscript().Acts
+        ret = 0
+        for a in _acts:
+            if a.Seq == seq:
+                 break
+            else:
+                 ret += 1
+        return ret
 
     def executeact(self,idx) -> int:
         ret = 0

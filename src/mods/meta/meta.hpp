@@ -30,6 +30,7 @@ using namespace std;
 #define pfMANUACT_CHRONO "manuact_chrono"
 #define pfMANUACT_EXEC "executeact"
 #define pfMANUACT_EXECMSG "executeactmsg"
+#define pfMANUACT_GETIDXBYSEQ "getactidxbyseq"
 
 typedef struct server {
     string host;
@@ -64,6 +65,10 @@ typedef struct actres {
 } ActResult;
 
 class PseudoActor {
+
+static void run(string &msg,Act _eact,string &_trun,string &msgout);
+static void run_prog(string &msg,string &msgout);
+
 public:
     string _paid;
     string _parat;
