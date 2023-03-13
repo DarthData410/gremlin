@@ -9,6 +9,7 @@
 # | Apache License v2.0
 # |$>
 
+import subprocess as sp
 from colorama import Fore
 import socket
 import selectors
@@ -234,8 +235,37 @@ class ReqManuComplete(register):
                 content=reg,
             )
 
-
 # pseudo-actor:
+class paexec:
+
+    _c = ['']
+    _ret = None
+    _iserr = False
+
+    def __init__(self,c=['None']):
+        """ supply an array set like: c=['ls','-l']. If c=['None'] returns None """
+        self._c = c
+        self.__exec__()
+
+    def __exec__(self):
+        _ret = None
+        
+        try:
+            _ret = sp.run(self._c, capture_output=True, text=True).stdout
+        except sp.CalledProcessError as e:
+            _ret = e.stderr
+            self._iserr = True
+        except FileNotFoundError as fe:
+            _ret = fe.strerror
+            self._iserr = True
+        self._ret = _ret
+    
+    def iserr(self) -> bool:
+        return self._iserr
+
+    def ret(self):
+        return self._ret
+
 class PseudoActor:
     """ main class used to enable communcation between Pseudo-Actor <-> Actor. (Register,Manuscript,HeartBeat,ActUpdate) """
      
@@ -256,6 +286,7 @@ class PseudoActor:
     _actupdateACK = None
     _CliReqManuComplete = None
     _manucompleteACK = None
+    _executeCERMSG = ''
      
     def __init__(self,acthost:str,actport:int) -> None:
         self._host = acthost
@@ -382,6 +413,21 @@ class PseudoActor:
          r.execute()
          self._CliReqManuComplete = r.returnmsg()
          self._manucompleteACK = self._CliReqManuComplete.result
+    
+    def geta(self,idx) -> act:
+        return self.manuscript().Acts[idx]
+    
+    def executeactmsg(self) -> str:
+        return self._executeCERMSG
+
+    def executeact(self,idx) -> int:
+        ret = 0
+        ea = self.geta(idx)
+        exec = paexec([ea.Command,ea.Args])
+        self._executeCERMSG = exec.ret()
+        if not exec.iserr():
+             ret = 1
+        return ret
     
 
      

@@ -10,6 +10,12 @@ PyObject *PseudoActor::regsrv_tuple() {
     return ret;
 }
 
+PyObject *PseudoActor::idx_tuple(int i) {
+    PyObject *ret = PyTuple_New(1);
+    ret  = Py_BuildValue("(i)",i);
+    return ret;
+}
+
 PyObject *PseudoActor::empty_tuple() {
     PyObject *ret = PyTuple_New(0);
     return ret;
@@ -25,11 +31,18 @@ PyObject *PseudoActor::psa_inst(PyObject *pclass,PyObject *pargs) {
     return ret;
 }
 
+// Uses an empty tuple|args for functions without parameters:
 PyObject *PseudoActor::pfbase(PyObject *psainst,const char *_type) {
     PyObject *et = empty_tuple();
-    PyObject *func = PyObject_GetAttrString(psainst, _type);
-    PyObject *ret = PyObject_CallObject(func,et);
+    PyObject *ret = pfbase(psainst,_type,et);
     Py_DECREF(et);
+    return ret;
+}
+
+// Asllows for python tuple|args sent in for functions with parameters:
+PyObject *PseudoActor::pfbase(PyObject *psainst,const char *_type,PyObject *_args) {
+    PyObject *func = PyObject_GetAttrString(psainst, _type);
+    PyObject *ret = PyObject_CallObject(func,_args);
     Py_DECREF(func);
     return ret;
 }
@@ -44,6 +57,12 @@ int PseudoActor::pyi(PyObject *pyobj) {
     int ret,_ret;
     PyArg_Parse(pyobj,"i",&_ret);
     ret = _ret;
+    return ret;
+}
+bool PseudoActor::pyb(PyObject *pyobj) {
+    bool ret,_res;
+    PyArg_Parse(pyobj,"b",&_res);
+    ret = _res;
     return ret;
 }
 
@@ -86,6 +105,76 @@ void PseudoActor::pf_request_manuscript(PyObject *psainst) {
     PyObject *numacts = pfbase(psainst,pfMANU_NUMACT);
     _manuscript.NumOfActs = pyi(numacts);
     Py_DECREF(numacts);
+
+    // build out acts|schedule:
+    for(int i=0;i<_manuscript.NumOfActs;i++) {
+        act a = pf_getact(psainst,i);
+        _acts.push_back(a);
+    }
+}
+
+act PseudoActor::pf_getact(PyObject *psainst,int idx) {
+    act ret = act(); 
+    PyObject *args = idx_tuple(idx);
+    // seq:
+    PyObject *seq = pfbase(psainst,pfMANUACT_SEQ,args);
+    string rseq = pys(seq);
+    Py_DECREF(seq);
+    // command:
+    PyObject *comm = pfbase(psainst,pfMANUACT_COMM,args);
+    string rcomm = pys(comm);
+    Py_DECREF(comm);
+    // args:
+    PyObject *aargs = pfbase(psainst,pfMANUACT_ARGS,args);
+    string raargs = pys(aargs);
+    Py_DECREF(aargs);
+    // output:
+    PyObject *output = pfbase(psainst,pfMANUACT_OUT,args);
+    int routput = pyi(output);
+    Py_DECREF(output);
+    // output:
+    PyObject *chrono = pfbase(psainst,pfMANUACT_CHRONO,args);
+    int rchrono = pyi(chrono);
+    Py_DECREF(chrono);
+
+    // set act:
+    ret.Seq = rseq;
+    ret.Command = rcomm;
+    ret.Args = raargs;
+    ret.Output = routput;
+    ret.Chrono = rchrono;
+
+    Py_DECREF(args);
+    return ret;
+}
+
+bool PseudoActor::process_manuscript(PyObject *psainst) {
+    bool ret = false;
+    for(int i=0;i<_acts.size();i++) {
+        Act a = _acts[i];
+        //printf("<...starting /meta->manuscript->acts->%s::%s in %i seconds...> \n",a.Seq.c_str(),a.Command.c_str(),a.Chrono);
+        chrono::steady_clock::time_point tp = chrono::steady_clock::now() + chrono::seconds(a.Chrono);
+	    this_thread::sleep_until(tp);
+        PyObject *args = idx_tuple(i);
+        PyObject *ares = pfbase(psainst,pfMANUACT_EXEC,args);
+        int _aer = pyi(ares);
+        Py_DECREF(ares);
+        Py_DECREF(args);
+        if(_aer==1) {
+            ret = ret && true;
+        }
+        else {
+            ret = ret && false;
+        }
+        
+        PyObject *ermsg = pfbase(psainst,pfMANUACT_EXECMSG);
+        ActResult ar = ActResult();
+        ar.ResAct = a;
+        ar.Result = pys(ermsg);
+        Py_DECREF(ermsg);
+        _actresults.push_back(ar);
+    }
+    return ret;
 }
 
 void PseudoActor::pf_report_server(PyObject *psainst) {
@@ -123,7 +212,8 @@ void meta::execute_as_psa() {
         _psa.pf_report_server(piPSA);
         _psa.pf_report_server_port(piPSA);
         _psa.pf_request_manuscript(piPSA);
-
+        _psa.process_manuscript(piPSA);
+        
     }
     else {
         PyErr_Print();
@@ -132,43 +222,55 @@ void meta::execute_as_psa() {
 
 }
 string meta::get_info() {
-    string ret = "\n";
-    ret += "   +-{/meta->info}\n";
-    ret += "   |\n";
-    ret += "  [+]--Registry Server-> ";
+    string ret = "";
+    ret += "    +-{/meta->info}\n";
+    ret += "    |\n";
+    ret += "   [+]--Registry Server-> ";
     ret += _psa._regsrvr.host;
     ret += "\n";
-    ret += "  [+]--Registry Server Port-> ";
+    ret += "   [+]--Registry Server Port-> ";
     ret += to_string(_psa._regsrvr.port);
     ret += "\n";
-    ret += "  [+]--Pseudo-Actor ID-> ";
+    ret += "   [+]--Pseudo-Actor ID-> ";
     ret += _psa._paid;
     ret += "\n";
-    ret += "  [+]--Pseudo-Actor @-> ";
+    ret += "   [+]--Pseudo-Actor @-> ";
     ret += _psa._parat;
     ret += "\n";
-    ret += "  [+]--Report Server-> ";
+    ret += "   [+]--Report Server-> ";
     ret += _psa._repsrvr.host;
     ret += "\n";
-    ret += "  [+]--Report Server Port-> ";
+    ret += "   [+]--Report Server Port-> ";
     ret += to_string(_psa._repsrvr.port);
     ret += "\n";
-    ret += "   |\n";
-    ret += "   |-{/meta->info->manuscript}\n";
-    ret += "  [+]--Manuscript ID-> ";
+    ret += "    |\n";
+    ret += "    |-{/meta->info->manuscript}\n";
+    ret += "   [+]--Manuscript ID-> ";
     ret += _psa._manuscript.ManuscriptID;
     ret += "\n";
-    ret += "  [+]--Actor Now @-> ";
+    ret += "   [+]--Actor Now @-> ";
     ret += _psa._manuscript.ActorNow;
     ret += "\n";
-    ret += "  [+]--Type-> ";
+    ret += "   [+]--Type-> ";
     ret += to_string(_psa._manuscript.Type);
     ret += "\n";
-    ret += "  [+]--Number of Acts:-> ";
+    ret += "   [+]--Number of Acts-> ";
     ret += to_string(_psa._manuscript.NumOfActs);
     ret += "\n";
-    ret += "   |\n";
-    ret += "   ^\n";
+    ret += "    |\n";
+    ret += "    |-{/meta->info->manuscript->act results}\n";
+    
+        for(ActResult ar : _psa._actresults) {
+            ret += "   [+]--Command->";
+            ret += ar.ResAct.Command;
+            ret += "\n";
+            ret += "   [+]--Result:\n";
+            ret += "    " + ar.Result;
+            ret += "\n    --------<end>\n";        
+        }
+    
+    ret += "    |\n";
+    ret += "    ^";
     return ret;
 }
 

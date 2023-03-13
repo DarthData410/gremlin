@@ -17,7 +17,6 @@ import json
 from colorama import Fore
 # /meta JSON/data contracts:
 from .datacontracts.register import *
-#from datacontracts.register import *
 from .datacontracts.manuscript import *
 from .datacontracts.datasys import *
 
@@ -569,12 +568,20 @@ class ReportSrvMsg(SrvMessage) :
         al = list()
         a = act(
             Seq="01",
-            Command="/Test1",
-            Args="Arg1",
+            Command="nmap",
+            Args="192.168.56.10",
             Output=1,
             Chrono=30
         )
+        a1 = act(
+            Seq="02",
+            Command="uuidgen",
+            Args="",
+            Output=1,
+            Chrono=10
+        )
         al.append(a)
+        al.append(a1)
 
         retManu = manuscript(
             ManuscriptID=genuid(),
@@ -582,7 +589,7 @@ class ReportSrvMsg(SrvMessage) :
             ReportingPort=regi.ReportPort,
             ActorNow=regi.RequestNow,
             Type=1,
-            NumOfActs=1,
+            NumOfActs=2,
             Acts=al
         )
 

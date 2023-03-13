@@ -88,6 +88,60 @@ void modloader::logit(string &msg,Command _lcmd) {
     }
 }
 
+void modank::run_lil_prog(string &msg,string &msgout) {
+    format f = format();
+    string _px = "";
+    string _out = "";
+    int i = 0;
+    
+    mutex _m;
+    deque<string> _q;
+
+    while(msg!="^qq") {
+        if(i>14) { i=0; }
+        system("clear");
+        _out = "";
+
+        _px = "[";
+        switch(i) {
+            case 0 : _px += ""+f.goldtxt()+"*"+f.none()+"----"; break;
+            case 1 : _px += "-"+f.goldtxt()+"*"+f.none()+"---"; break;
+            case 2 : _px += "--"+f.goldtxt()+"*"+f.none()+"--"; break;
+            case 3 : _px += "---"+f.goldtxt()+"*"+f.none()+"-"; break;
+            case 4 : _px += "----"+f.goldtxt()+"*"+f.none()+""; break;
+            case 5 : _px += ""+f.goldtxt()+"*"+f.none()+"---"+f.goldtxt()+"*"+f.none()+""; break;
+            case 6 : _px += "-"+f.goldtxt()+"*"+f.none()+"-"+f.goldtxt()+"*"+f.none()+"-"; break;
+            case 7 : _px += "--"+f.goldtxt()+"*"+f.none()+"--"; break;
+            case 8 : _px += "---"+f.goldtxt()+"*"+f.none()+"-"; break;
+            case 9 : _px += "----"+f.goldtxt()+"*"+f.none()+""; break;
+            case 10 : _px += "---"+f.goldtxt()+"*"+f.none()+"-"; break;
+            case 11 : _px += "--"+f.goldtxt()+"*"+f.none()+"--"; break;
+            case 12 : _px += "-"+f.goldtxt()+"*"+f.none()+"---"; break;
+            case 13 : _px += ""+f.goldtxt()+"*"+f.none()+"----"; break;
+            case 14 : _px += f.bluetxt()+"-----"+f.none(); break;
+            default: _px += "*"; break;
+        }
+        _px += "]";
+
+        _out += "\n";
+        _out += f.bluetxt()+"  gremlin - /ank - trace task executing"+f.none() + "\n";
+        _out += "  |  press the "+f.greentxt()+"q"+f.none()+" key & "+f.greentxt()+"enter"+f.none()+" to quit process. \n";
+        _out += "  |\n";
+        _out += "  |-->"+_px+"\n";
+        _out += "  "+f.goldtxt()+"+"+f.none()+"\n";
+        
+        if(msgout!="") {
+            _out += "  |->"+msgout+"\n";
+        }
+        
+        cout << _out;
+        i++;
+        std::chrono::steady_clock::time_point tp = std::chrono::steady_clock::now() + std::chrono::milliseconds(800);
+	    std::this_thread::sleep_until(tp);
+    }
+
+};
+
 // ank:
 modank::modank() {
     _modname = MOD_ANK;
@@ -138,8 +192,6 @@ Command modank::process(Command _process) {
         thread ptx(run_lil_prog, ref(message), ref(_msgout));
         &_msgout.append("Trace on for "+_prots_msg);
         thread tx(run, ref(message),_prots[2],_prots[1],_prots[0],ref(_spc),ref(_spt),ref(_trun));
-
-        &_msgout.append("::[Processing with:"+_prots_msg+"]");
 
         string msg_back;
         cin >> msg_back;
@@ -198,64 +250,30 @@ void modank::run(string &msg,bool _ri,bool _ru, bool _rt,double &_stat_pc, doubl
 	std::this_thread::sleep_until(tp);
 }
 
-
-void modank::run_lil_prog(string &msg,string &msgout) {
-    format f = format();
-    string _px = "";
-    string _out = "";
-    int i = 0;
-    
-    mutex _m;
-    deque<string> _q;
-
-    while(msg!="^qq") {
-        if(i>14) { i=0; }
-        system("clear");
-        _out = "";
-
-        _px = "[";
-        switch(i) {
-            case 0 : _px += ""+f.goldtxt()+"*"+f.none()+"----"; break;
-            case 1 : _px += "-"+f.goldtxt()+"*"+f.none()+"---"; break;
-            case 2 : _px += "--"+f.goldtxt()+"*"+f.none()+"--"; break;
-            case 3 : _px += "---"+f.goldtxt()+"*"+f.none()+"-"; break;
-            case 4 : _px += "----"+f.goldtxt()+"*"+f.none()+""; break;
-            case 5 : _px += ""+f.goldtxt()+"*"+f.none()+"---"+f.goldtxt()+"*"+f.none()+""; break;
-            case 6 : _px += "-"+f.goldtxt()+"*"+f.none()+"-"+f.goldtxt()+"*"+f.none()+"-"; break;
-            case 7 : _px += "--"+f.goldtxt()+"*"+f.none()+"--"; break;
-            case 8 : _px += "---"+f.goldtxt()+"*"+f.none()+"-"; break;
-            case 9 : _px += "----"+f.goldtxt()+"*"+f.none()+""; break;
-            case 10 : _px += "---"+f.goldtxt()+"*"+f.none()+"-"; break;
-            case 11 : _px += "--"+f.goldtxt()+"*"+f.none()+"--"; break;
-            case 12 : _px += "-"+f.goldtxt()+"*"+f.none()+"---"; break;
-            case 13 : _px += ""+f.goldtxt()+"*"+f.none()+"----"; break;
-            case 14 : _px += f.bluetxt()+"-----"+f.none(); break;
-            default: _px += "*"; break;
-        }
-        _px += "]";
-
-        _out += "\n";
-        _out += f.bluetxt()+"  gremlin - task executing"+f.none() + "\n";
-        _out += "  |  press the "+f.greentxt()+"q"+f.none()+" key & "+f.greentxt()+"enter"+f.none()+" to quit process. \n";
-        _out += "  |\n";
-        _out += "  |-->"+_px+"\n";
-        _out += "  "+f.goldtxt()+"+"+f.none()+"\n";
-        
-        if(msgout!="") {
-            _out += "  |->"+msgout+"\n";
-        }
-        
-        cout << _out;
-        i++;
-        std::chrono::steady_clock::time_point tp = std::chrono::steady_clock::now() + std::chrono::milliseconds(800);
-	    std::this_thread::sleep_until(tp);
-    }
-
-};
-
 metamod::metamod() {
     _info = "";
 };
+
+bool metamod::check_regsrvparm(Command _process) {
+    bool ret = false;
+    int _cop = 0;
+    if(_process.parm[0].length()>8) {
+        if(_process.parm[0].find_first_of('.',0)>0) {
+            int pfo = _process.parm[0].find_first_of('.',0);
+            if(_process.parm[0].find_last_of('.',0)>pfo) {
+                for(char c : _process.parm[0]) {
+                    if(c=='.') {
+                        _cop++;
+                    }
+                }
+                if(_cop==3) {
+                    ret = true;
+                }
+            }
+        }
+    } 
+    return ret;
+}
 
 Command metamod::process(Command _process) {
     format f = format();
@@ -263,16 +281,21 @@ Command metamod::process(Command _process) {
     ret._base = _process._base;
 
     ret.msg = "\n";
-    if(_process.value==CRUN){
-        meta m = meta("192.168.56.1",41011);
-        m.execute_as_psa();
-        _info = m.get_info();
-        ret.msg += _info;
-        _is_loaded = true;
-        
+    if(_process.value==CRUN && _process.args[2]==CPARMS) {
+        if(check_regsrvparm(_process)) {
+            meta m = meta(_process.parm[0],atoi(_process.parm[1].c_str()));
+            m.execute_as_psa();
+            _info = m.get_info();
+            ret.msg += _info;
+            _is_loaded = true;
+        }
+        else {
+            _is_loaded = false;
+            ret.msg += "    {error: incorrect usage.} \n";
+            ret.msg += "    |---Expected Usage: ! -ip address (ie: -127.0.0.1) -port (ie: -41013)\n";
+        }
     }
-    //else if(_process.value==CINFO && _is_loaded) {
-    else if(_process._base.find('i',0)==0|| _process._base.find('I',0)==0) {
+    else if(_process.value==CINFO && _is_loaded) {
         ret.msg += _info;
     }
 

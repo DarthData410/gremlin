@@ -52,6 +52,7 @@ private:
 
 public:
     metamod();
+    bool check_regsrvparm(Command _process);
     Command process(Command _process);
     
 };

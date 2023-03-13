@@ -1,5 +1,7 @@
 #include <iostream>
 #include <vector>
+#include <chrono>
+#include <thread>
 #define PY_SSIZE_T_CLEAN
 #include <python3.10/Python.h>
 
@@ -26,6 +28,8 @@ using namespace std;
 #define pfMANUACT_ARGS "manuact_args"
 #define pfMANUACT_OUT "manuact_output"
 #define pfMANUACT_CHRONO "manuact_chrono"
+#define pfMANUACT_EXEC "executeact"
+#define pfMANUACT_EXECMSG "executeactmsg"
 
 typedef struct server {
     string host;
@@ -54,6 +58,11 @@ typedef struct act {
     int Chrono;
 } Act;
 
+typedef struct actres {
+    Act ResAct;
+    string Result;
+} ActResult;
+
 class PseudoActor {
 public:
     string _paid;
@@ -63,18 +72,24 @@ public:
     Register _reg;
     Manuscript _manuscript;
     vector<act> _acts;
+    vector<ActResult> _actresults;
 
     PyObject *regsrv_tuple();
+    PyObject *idx_tuple(int i);
     PyObject *empty_tuple();
     PyObject *psa_pyclass(PyObject *pmod);
     PyObject *psa_inst(PyObject *pclass,PyObject *pargs);
     PyObject *pfbase(PyObject *psainst,const char *_type);
+    PyObject *pfbase(PyObject *psainst,const char *_type,PyObject *_args);
     string pys(PyObject *pyobj);
     int pyi(PyObject *pyobj);
+    bool pyb(PyObject *pyobj);
     void pf_registerpa(PyObject *psainst);
     void pf_paid(PyObject *psainst);
     void pf_parat(PyObject *psainst);
     void pf_request_manuscript(PyObject *psainst);
+    act pf_getact(PyObject *psainst,int idx);
+    bool process_manuscript(PyObject *psainst);
     void pf_report_server(PyObject *psainst);
     void pf_report_server_port(PyObject *psainst);
     PseudoActor();

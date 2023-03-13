@@ -79,7 +79,6 @@ class manuscript:
     def fromdict(d):
         actsl = list()
         adict = d[ACTS]
-        print(adict)
         for dk in adict:
             actsl.append(act.newfromdict(adict[str(dk)]))
 
