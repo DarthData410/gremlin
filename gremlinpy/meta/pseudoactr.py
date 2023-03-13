@@ -285,14 +285,25 @@ class PseudoActor:
          return self._manuscript
     def manuscriptID(self) -> str:
          return self.manuscript().ManuscriptID
-    def manuscript_NumOfActs(self) -> int:
+    def manuscriptActorNow(self) -> str:
+        return self.manuscript().ActorNow
+    def manuscriptType(self) -> int:
+         return self.manuscript().Type
+    def manuscriptPseudoActor(self) -> str:
+         return self.manuscript().PseudoActor
+    # Acts:
+    def manuscriptNumOfActs(self) -> int:
          return self.manuscript().NumOfActs
     def manuact_seq(self,idx) -> str:
          return self.manuscript().Acts[idx].Seq
     def manuact_command(self,idx) -> str:
          return self.manuscript().Acts[idx].Command
     def manuact_args(self,idx) -> str:
-         return self.manuscript().Acts[idx].Args 
+         return self.manuscript().Acts[idx].Args
+    def manuact_output(self,idx) -> int:
+         return self.manuscript().Acts[idx].Output
+    def manuact_chrono(self,idx) -> int:
+         return self.manuscript().Acts[idx].Chrono
     # end manuscript section -----------------------
     
     # ACK section: ---------------------------------

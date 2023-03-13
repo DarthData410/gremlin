@@ -24,16 +24,14 @@ void modloader::setmod(Module _m) {
 }
 Command modloader::process(Command _process) {
     Command ret = Command();
-    modank a = modank();
-    metamod m = metamod();
     
     switch(_loaded_mod.value) {
         case MLC_ANK :
-            ret = a.process(_process);
+            ret = _mdank.process(_process);
             return ret;
             break;
         case MLC_META :
-            ret = m.process(_process);
+            ret = _mdmet.process(_process);
             return ret;
             break;
         default :

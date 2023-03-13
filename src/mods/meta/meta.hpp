@@ -9,8 +9,23 @@ using namespace std;
 #define PSA "PseudoActor"
 // py function constants:
 #define pfREGPA "registerpa"
+#define pfREGPAID "paid"
+#define pfREGPARAT "parat"
 #define pfREPSRV "report_server"
 #define pfREPSRVPRT "report_server_port"
+#define pfREQMANU "request_manuscript"
+// manuscript calls:
+#define pfMANU_ID "manuscriptID"
+#define pfMANU_ACTNOW "manuscriptActorNow"
+#define pfMANU_TYPE "manuscriptType"
+#define pfMANU_PSAID "manuscriptPseudoActor"
+#define pfMANU_NUMACT "manuscriptNumOfActs"
+// manuscript act calls:
+#define pfMANUACT_SEQ "manuact_seq"
+#define pfMANUACT_COMM "manuact_command"
+#define pfMANUACT_ARGS "manuact_args"
+#define pfMANUACT_OUT "manuact_output"
+#define pfMANUACT_CHRONO "manuact_chrono"
 
 typedef struct server {
     string host;
@@ -41,6 +56,8 @@ typedef struct act {
 
 class PseudoActor {
 public:
+    string _paid;
+    string _parat;
     RegistryServer _regsrvr;
     ReportServer _repsrvr;
     Register _reg;
@@ -52,7 +69,12 @@ public:
     PyObject *psa_pyclass(PyObject *pmod);
     PyObject *psa_inst(PyObject *pclass,PyObject *pargs);
     PyObject *pfbase(PyObject *psainst,const char *_type);
+    string pys(PyObject *pyobj);
+    int pyi(PyObject *pyobj);
     void pf_registerpa(PyObject *psainst);
+    void pf_paid(PyObject *psainst);
+    void pf_parat(PyObject *psainst);
+    void pf_request_manuscript(PyObject *psainst);
     void pf_report_server(PyObject *psainst);
     void pf_report_server_port(PyObject *psainst);
     PseudoActor();

@@ -18,31 +18,6 @@
 
 using namespace std;
 
-class modloader{
-static string logfile();
-static string getlogfile();
-static void logit(string &msg,Command _lcmd);
-
-public:
-    Module _loaded_mod=Module();
-    void setmod(Module _m);
-    string _modname="_";
-    string _title="";
-    string _process="";
-    string _prompt="";
-    string _ret="";
-    string _msg="";
-    bool _iserror;
-
-    modloader();
-    string prompt();
-    string ret();
-    string msg();
-    bool iserror();
-    Command process(Command _process);
-
-};
-
 class mb{
 
 public:
@@ -80,3 +55,32 @@ public:
     Command process(Command _process);
     
 };
+
+class modloader{
+static string logfile();
+static string getlogfile();
+static void logit(string &msg,Command _lcmd);
+    
+public:
+    Module _loaded_mod=Module();
+    void setmod(Module _m);
+    string _modname="_";
+    string _title="";
+    string _process="";
+    string _prompt="";
+    string _ret="";
+    string _msg="";
+    bool _iserror;
+
+    modloader();
+    string prompt();
+    string ret();
+    string msg();
+    bool iserror();
+    Command process(Command _process);
+    // mods:
+    modank _mdank = modank();
+    metamod _mdmet = metamod();
+
+};
+
