@@ -207,6 +207,26 @@ class RequestManuscript:
         return ret
 
 @dc.dataclass
+class SubmitManuscript:
+    ManuscriptID: str
+    Now: str
+    NewManuscript: dict
+
+    def todict(self):
+        ret = dict()
+        ret["ManuscriptID"] = self.ManuscriptID
+        ret["Now"] = self.Now
+        ret["NewManuscript"] = self.NewManuscript
+        return ret
+    def fromdict(d):
+        ret = SubmitManuscript(
+            ManuscriptID=d["ManuscriptID"],
+            Now=d["Now"],
+            NewManuscript=d["NewManuscript"]
+        )
+        return ret
+
+@dc.dataclass
 class ManuscriptCompleted:
     ManuscriptID: str
     Status: int

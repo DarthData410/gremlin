@@ -8,6 +8,9 @@
 using namespace std;
 
 #define GREMPY "gremlinpy.meta.pseudoactr"
+#define GREMPYA "gremlinpy.meta.actr"
+#define REGISTRY "Registry"
+
 #define PSA "PseudoActor"
 // py function constants:
 #define pfREGPA "registerpa"
@@ -63,6 +66,15 @@ typedef struct actres {
     Act ResAct;
     string Result;
 } ActResult;
+
+class Registry {
+private:
+    RegistryServer _srvr;
+
+public:
+    Registry(RegistryServer _regsrvr);
+    RegistryServer get_srvr();
+};
 
 class PseudoActor {
 

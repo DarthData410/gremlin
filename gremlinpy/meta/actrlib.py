@@ -269,6 +269,33 @@ class CliReqManuComplete(CliMessage):
         hback = ACK.fromdict(result)
         self.result = hback
         
+# GQueue Cli Messages:
+class gqCliSubManuACKMsg(CliMessage):
+
+    def __init__(self, selector, sock, addr, request):
+        super().__init__(selector, sock, addr, request)
+    
+    def _process_response_json_content(self):
+        content = self.response
+        result = content.get("result")
+        r = result 
+        ra = ACK.fromdict(r)
+        self.result = ra
+    
+class gqCliReqManuACKMsg(CliMessage):
+
+    def __init__(self, selector, sock, addr, request):
+        super().__init__(selector, sock, addr, request)
+    
+    def _process_response_json_content(self):
+        content = self.response
+        result = content.get("result")
+        r = result 
+        ra = ACK.fromdict(r)
+        self.result = ra
+        print("*** REPLY FROM GQueue | Manuscript Request ***")
+        print(ra)
+
 # Server Message Operations:        
 class SrvMessage:
     def __init__(self, selector, sock, addr):
@@ -635,3 +662,96 @@ class ReportSrvMsg(SrvMessage) :
                 "content_encoding": encoding,
             }
             return resp
+
+class gqMsg(SrvMessage) :
+    
+    _gqmanu = ''
+    _caller = ''
+
+    def __init__(self, selector, sock, addr,caller):
+        self._caller = caller
+        super().__init__(selector, sock, addr) 
+    def current_manuscript(self):
+        return self._gqmanu
+    def __submit_manuscript__(self):
+        _submanu = self.request.get("submit_manuscript")
+        subm = SubmitManuscript.fromdict(_submanu)
+        manu = manuscript.fromdict(subm.NewManuscript)
+        # build reply:
+        replyACK = ACK(
+            HostFrom=str(self.addr[0]),
+            HostPort=int(self.addr[1]),
+            AckMsg="[MANUID:"+manu.ManuscriptID+"::QUEUED]",
+            AckNow=getnow(),
+            ReqID=genuid()
+        )
+        self._gqmanu = manu
+        resultd = dict()
+        resultd["result"] = replyACK.todict()
+
+        encoding = "utf-8"
+        resp = {
+            "content_bytes": self._json_encode(resultd, encoding),
+            "content_type": "text/json",
+            "content_encoding": encoding,
+        }
+        return resp
+    
+    def __request_manuscript__(self):
+        _req = self.request.get("manuscript_request")
+        regi = RequestManuscript.fromdict(_req)
+
+        resultd = dict()
+        # Build Reply ACK:
+        replyACK = ACK(
+            HostFrom=regi.ReportHost,
+            HostPort=regi.ReportPort,
+            AckMsg="",
+            AckNow=getnow(),
+            ReqID=genuid()
+        )
+
+        if self._caller.__has_manus__():
+            retManu = self._caller.__get_manu__()
+            replyACK.AckMsg=retManu.todict()
+            print(Fore.LIGHTRED_EX+retManu.ManuscriptID+Fore.RESET+" sent to @"+Fore.LIGHTCYAN_EX+regi.PseudoActor+Fore.RESET)    
+        else:
+            replyACK.AckMsg = "["+regi.PseudoActor+"::0::NO_MANUSCRIPTS]"
+            
+        resultd["result"] = replyACK.todict()
+        encoding = "utf-8"
+        resp = {
+            "content_bytes": self._json_encode(resultd, encoding),
+            "content_type": "text/json",
+            "content_encoding": encoding,
+        }
+        return resp
+
+    def _create_response_json_content(self):
+        
+        # detect request type:
+        if self.request.__contains__("submit_manuscript"):
+            return self.__submit_manuscript__()
+        elif self.request.__contains__("manuscript_request"):
+            return self.__request_manuscript__()
+        else:
+            # generic ACK back to NVREQ = Non-Valid REQuest
+            genACK = ACK(
+                HostFrom=self.addr,
+                HostPort=0,
+                AckMsg="NVREQ",
+                AckNow=getnow(),
+                ReqID=genuid()
+            )
+
+            resultd = dict()
+            resultd["result"] = genACK.todict()
+
+            encoding = "utf-8"
+            resp = {
+                "content_bytes": self._json_encode(resultd, encoding),
+                "content_type": "text/json",
+                "content_encoding": encoding,
+            }
+            return resp
+        
