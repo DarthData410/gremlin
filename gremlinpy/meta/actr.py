@@ -292,3 +292,72 @@ class GQueue(Registry):
     def __message__(self,conn, addr):
         msg = gqMsg(self._sel, conn, addr,self)
         return msg
+
+# ******************************************
+# Interfaces for CPP
+# ******************************************
+# CHANGE AT OWN RISK          
+#               ^^^^        
+
+class Actor: 
+
+    _host = ''
+    _port = 0
+    _active_acts = list()
+    _active_manuscript = ''
+
+    def __init__(self, host:str, port:int):
+        self._host = host
+        self._port = port
+        self._active_acts = list()
+    
+    def buildact(self,_seq:str,_comm:str,_args:str,_outp:int,_chrono:int) -> act:
+        ret = act(
+            Seq=_seq,
+            Command=_comm,
+            Args=_args,
+            Output=_outp,
+            Chrono=_chrono
+        )
+        self._active_acts.append(ret)
+        return ret
+    
+    def buildmanuscript(self,_manuid:str,_psa:str,_type:int) -> manuscript:
+        ret = manuscript(
+            ManuscriptID=_manuid,
+            PseudoActor=_psa,
+            ReportingPort="^",
+            ActorNow=getnow(),
+            Type=_type,
+            NumOfActs=self._active_acts.__len__(),
+            Acts=self._active_acts
+        )
+        self._active_manuscript = ret
+        return ret
+
+    def getmanuid(self):
+        ret = genuid()
+        return ret
+
+    def numofacts(self) -> int:
+        return self._active_acts.__len__()
+
+    def submitmanu(self):
+        print(self._active_acts)
+        print(self._active_manuscript)
+        print(self._host)
+        print(self._port)
+        try:
+            gqc = gqcli(
+                host=self._host,
+                port=self._port,
+                manuid=self._active_manuscript.ManuscriptID,
+                now=getnow(),
+                manu=self._active_manuscript
+            )
+            gqc.execute()
+        except Exception as e:
+            print(e)
+
+
+    

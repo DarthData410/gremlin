@@ -298,6 +298,11 @@ Command metamod::process(Command _process) {
     else if(_process.value==CINFO && _is_loaded) {
         ret.msg += _info;
     }
+    else if(_process.value==CSUBMIT) {
+        meta m = meta(_process.parm[0],atoi(_process.parm[1].c_str()),1);
+        m.execute_submit_manu();
+        ret.msg += "submitted with parms: -" + _process.parm[0] + " & -" + _process.parm[1];
+    }
 
     return ret;
 }

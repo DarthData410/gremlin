@@ -16,6 +16,7 @@
 #define CANCHOR '~'
 #define CPS '-'
 #define CINFO 'i'
+#define CSUBMIT '$'
 
 // ModLoadChars:
 #define MLC_BASE '*'

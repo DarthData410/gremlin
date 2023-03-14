@@ -1,38 +1,38 @@
 #include "meta.hpp"
 
-PseudoActor::PseudoActor() {
+baseActor::baseActor() {
 
 }
 
-PyObject *PseudoActor::regsrv_tuple() {
+PyObject *baseActor::srv_tuple(server _srv) {
     PyObject *ret = PyTuple_New(2);
-    ret  = Py_BuildValue("(si)",_regsrvr.host.c_str(),_regsrvr.port);
+    ret  = Py_BuildValue("(si)",_srv.host.c_str(),_srv.port);
     return ret;
 }
 
-PyObject *PseudoActor::idx_tuple(int i) {
+PyObject *baseActor::idx_tuple(int i) {
     PyObject *ret = PyTuple_New(1);
     ret  = Py_BuildValue("(i)",i);
     return ret;
 }
 
-PyObject *PseudoActor::empty_tuple() {
+PyObject *baseActor::empty_tuple() {
     PyObject *ret = PyTuple_New(0);
     return ret;
 }
 
-PyObject *PseudoActor::psa_pyclass(PyObject *pmod) {
-    PyObject *ret = PyObject_GetAttrString(pmod, PSA);
+PyObject *baseActor::pyclass(PyObject *pmod,const char *_cls) {
+    PyObject *ret = PyObject_GetAttrString(pmod, _cls);
     return ret;
 }
 
-PyObject *PseudoActor::psa_inst(PyObject *pclass,PyObject *pargs) {
+PyObject *baseActor::inst(PyObject *pclass,PyObject *pargs) {
     PyObject *ret = PyEval_CallObject(pclass, pargs);
     return ret;
 }
 
 // Uses an empty tuple|args for functions without parameters:
-PyObject *PseudoActor::pfbase(PyObject *psainst,const char *_type) {
+PyObject *baseActor::pfbase(PyObject *psainst,const char *_type) {
     PyObject *et = empty_tuple();
     PyObject *ret = pfbase(psainst,_type,et);
     Py_DECREF(et);
@@ -40,31 +40,36 @@ PyObject *PseudoActor::pfbase(PyObject *psainst,const char *_type) {
 }
 
 // Asllows for python tuple|args sent in for functions with parameters:
-PyObject *PseudoActor::pfbase(PyObject *psainst,const char *_type,PyObject *_args) {
+PyObject *baseActor::pfbase(PyObject *psainst,const char *_type,PyObject *_args) {
     PyObject *func = PyObject_GetAttrString(psainst, _type);
     PyObject *ret = PyObject_CallObject(func,_args);
     Py_DECREF(func);
     return ret;
 }
-string PseudoActor::pys(PyObject *pyobj) {
+string baseActor::pys(PyObject *pyobj) {
     string ret;
     char *_res;
     PyArg_Parse(pyobj,"s",&_res);
     ret = _res;
     return ret;
 }
-int PseudoActor::pyi(PyObject *pyobj) {
+int baseActor::pyi(PyObject *pyobj) {
     int ret,_ret;
     PyArg_Parse(pyobj,"i",&_ret);
     ret = _ret;
     return ret;
 }
-bool PseudoActor::pyb(PyObject *pyobj) {
+bool baseActor::pyb(PyObject *pyobj) {
     bool ret,_res;
     PyArg_Parse(pyobj,"b",&_res);
     ret = _res;
     return ret;
 }
+
+PseudoActor::PseudoActor() {
+
+}
+
 
 void PseudoActor::pf_registerpa(PyObject *psainst) {
     PyObject *ret = pfbase(psainst,pfREGPA);
@@ -111,6 +116,13 @@ void PseudoActor::pf_request_manuscript(PyObject *psainst) {
         act a = pf_getact(psainst,i);
         _acts.push_back(a);
     }
+}
+
+RegistryServer PseudoActor::get_regsrvr() {
+    return _regsrvr;
+}
+ReportServer PseudoActor::get_repsrvr() {
+    return _repsrvr;
 }
 
 act PseudoActor::pf_getact(PyObject *psainst,int idx) {
@@ -250,11 +262,54 @@ void PseudoActor::pf_report_server_port(PyObject *psainst) {
     Py_DECREF(ret);
 }
 
+Actor::Actor() {
+
+}
+GQueue Actor::get_queinfo() {
+    return _que_info;
+}
+Manuscript Actor::get_manuscript(){
+    return _manuscript;
+}
+
+// used to interface with actr.Actor Py object to get new manuscript ID value.:
+string Actor::get_newmanuid(PyObject *inst) {
+    PyObject *pyret = pfbase(inst,pfACTOR_NEWMANUID);
+    string ret = pys(pyret);
+    Py_DECREF(pyret);
+    return ret;
+}
+
+// used to build act for manuscript buildout with Py object interface.:
+void Actor::buildact(Act _a,PyObject *inst) {
+    PyObject *pargs = PyTuple_New(5);
+    pargs = Py_BuildValue("(sssii)",_a.Seq.c_str(),_a.Command.c_str(),_a.Args.c_str(),_a.Output,_a.Chrono);
+    PyObject *pyret = pfbase(inst,pfACTOR_BUILDACT,pargs);
+    Py_DECREF(pyret);
+}
+void Actor::buildmanuscript(Manuscript _m,PyObject *inst) {
+    PyObject *pargs = PyTuple_New(5);
+    pargs = Py_BuildValue("(ssi)",_m.ManuscriptID.c_str(),_m.PseudoActor.c_str(),_m.Type);
+    PyObject *pyret = pfbase(inst,pfACTOR_BUILDMANU,pargs);
+    Py_DECREF(pyret);
+}
+void Actor::submitmanuscript(PyObject *inst) {
+    PyObject *pyret = pfbase(inst,pfACTOR_SUBMITMANU);
+    Py_DECREF(pyret);
+}
+
 meta::meta(string _rsrvr,int _rsrvrport) {
     _psa = PseudoActor();
     _psa._regsrvr = RegistryServer();
     _psa._regsrvr.host = _rsrvr;
     _psa._regsrvr.port = _rsrvrport;
+}
+meta::meta(string _qip, int _qport, int _mtype) {
+    _actr = Actor();
+    _actr._que_info = GQueue();
+    _actr._que_info.host = _qip;
+    _actr._que_info.port = _qport;
+    _actr._passed_type = _mtype;
 }
 
 void meta::execute_as_psa() {
@@ -266,9 +321,9 @@ void meta::execute_as_psa() {
     pModule = PyImport_Import(pName);
 
     if(pModule != NULL) {
-        pcPSA = _psa.psa_pyclass(pModule);
-        piPSAargs = _psa.regsrv_tuple();
-        piPSA = _psa.psa_inst(pcPSA,piPSAargs);
+        pcPSA = _psa.pyclass(pModule,PSA);
+        piPSAargs = _psa.srv_tuple(_psa.get_regsrvr());
+        piPSA = _psa.inst(pcPSA,piPSAargs);
         // register and set report server variables:
         _psa.pf_registerpa(piPSA);
         _psa.pf_report_server(piPSA);
@@ -276,10 +331,49 @@ void meta::execute_as_psa() {
         _psa.pf_request_manuscript(piPSA);
         _psa.process_manuscript(piPSA);
         
+        Py_DECREF(piPSA);
+        Py_DECREF(piPSAargs);
+        Py_DECREF(pcPSA);
+        Py_DECREF(pModule);
+        Py_DECREF(pName);
+
     }
     else {
         PyErr_Print();
         fprintf(stderr, "Failed to load /meta.py \n");
+    }
+
+    Py_Finalize();
+}
+void meta::execute_submit_manu() {
+    PyObject *pName, *pModule, *pcAct, *piAct;
+    PyObject *piActArgs;
+
+    Py_Initialize();
+    pName = PyUnicode_DecodeFSDefault(GREMPYA);
+    pModule = PyImport_Import(pName);
+    
+    if(pModule != NULL) {
+        pcAct = _actr.pyclass(pModule,ACTR);
+        piActArgs = _actr.srv_tuple(_actr.get_queinfo());
+        piAct = _actr.inst(pcAct,piActArgs);
+        string nmid = _actr.get_newmanuid(piAct);
+        
+        Act _testa = Act();
+        _testa.Seq="01";
+        _testa.Command="ls";
+        _testa.Args="-l";
+        _testa.Output=1;
+        _testa.Chrono=10;
+        _actr.buildact(_testa,piAct);
+
+        Manuscript _testm = Manuscript();
+        _testm.ManuscriptID = nmid;
+        _testm.PseudoActor = "^";
+        _testm.Type = 1;
+        _actr.buildmanuscript(_testm,piAct);
+
+        _actr.submitmanuscript(piAct);
     }
 
 }

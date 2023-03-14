@@ -73,8 +73,8 @@ Command settings::getcmd(string _r,char args[]) {
         ret.value = CLOAD;
     }
     else {
-        if(args[0]!=CNULL && (ret._base.find(CRUN,0)==0)) {
-            ret.value = CRUN;
+        if(args[0]!=CNULL) { //&& (ret._base.find(CRUN,0)==0)) {
+            //ret.value = CRUN;
             bool sp=false;
             int i=0;
             
@@ -102,6 +102,14 @@ Command settings::getcmd(string _r,char args[]) {
                 ret.args[2] = CNULL;
             }
 
+        }
+
+        // get .value:
+        if(ret._base.find(CRUN,0)==0) {
+            ret.value = CRUN;
+        }
+        else if(ret._base.find(CSUBMIT,0)==0) {
+            ret.value = CSUBMIT;
         }
     }
 

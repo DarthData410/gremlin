@@ -12,6 +12,7 @@ using namespace std;
 #define REGISTRY "Registry"
 
 #define PSA "PseudoActor"
+#define ACTR "Actor"
 // py function constants:
 #define pfREGPA "registerpa"
 #define pfREGPAID "paid"
@@ -34,11 +35,19 @@ using namespace std;
 #define pfMANUACT_EXEC "executeact"
 #define pfMANUACT_EXECMSG "executeactmsg"
 #define pfMANUACT_GETIDXBYSEQ "getactidxbyseq"
+// *********************************************
+// Actor (CPP) <---> actr.Actor (PY) constants:
+// *********************************************
+#define pfACTOR_NEWMANUID "getmanuid"
+#define pfACTOR_NUMOFACTS "numofacts"
+#define pfACTOR_BUILDACT "buildact"
+#define pfACTOR_BUILDMANU "buildmanuscript"
+#define pfACTOR_SUBMITMANU "submitmanu"
 
 typedef struct server {
     string host;
     int port;
-} RegistryServer,ReportServer;
+} RegistryServer,ReportServer,GQueue;
 
 typedef struct reg {
     string paid;
@@ -76,7 +85,22 @@ public:
     RegistryServer get_srvr();
 };
 
-class PseudoActor {
+class baseActor {
+public:
+    baseActor();
+    PyObject *srv_tuple(server _srv);
+    PyObject *idx_tuple(int i);
+    PyObject *empty_tuple();
+    PyObject *pyclass(PyObject *pmod,const char *_cls);
+    PyObject *inst(PyObject *pclass,PyObject *pargs);
+    PyObject *pfbase(PyObject *psainst,const char *_type);
+    PyObject *pfbase(PyObject *psainst,const char *_type,PyObject *_args);
+    string pys(PyObject *pyobj);
+    int pyi(PyObject *pyobj);
+    bool pyb(PyObject *pyobj);
+};
+
+class PseudoActor:public baseActor {
 
 static void run(string &msg,Act _eact,string &_trun,string &msgout);
 static void run_prog(string &msg,string &msgout);
@@ -91,16 +115,8 @@ public:
     vector<act> _acts;
     vector<ActResult> _actresults;
 
-    PyObject *regsrv_tuple();
-    PyObject *idx_tuple(int i);
-    PyObject *empty_tuple();
-    PyObject *psa_pyclass(PyObject *pmod);
-    PyObject *psa_inst(PyObject *pclass,PyObject *pargs);
-    PyObject *pfbase(PyObject *psainst,const char *_type);
-    PyObject *pfbase(PyObject *psainst,const char *_type,PyObject *_args);
-    string pys(PyObject *pyobj);
-    int pyi(PyObject *pyobj);
-    bool pyb(PyObject *pyobj);
+    RegistryServer get_regsrvr();
+    ReportServer get_repsrvr();
     void pf_registerpa(PyObject *psainst);
     void pf_paid(PyObject *psainst);
     void pf_parat(PyObject *psainst);
@@ -112,13 +128,32 @@ public:
     PseudoActor();
 };
 
+class Actor:public baseActor {
+public:
+    GQueue _que_info;
+    vector<Act> _acts;
+    Manuscript _manuscript;
+    int _passed_type;
+
+    Actor();
+    GQueue get_queinfo();
+    Manuscript get_manuscript();
+    string get_newmanuid(PyObject *inst);
+    void buildact(Act _a,PyObject *inst);
+    void buildmanuscript(Manuscript _m,PyObject *inst);
+    void submitmanuscript(PyObject *inst);
+};
+
 class meta {
 private:
     PseudoActor _psa;
+    Actor _actr;
 
 public:
     meta(string _rsrvr,int _rsrvrport);
+    meta(string _qip, int _qport, int _mtype);
     void execute_as_psa();
+    void execute_submit_manu();
     string get_info();
     int testpy();
 
